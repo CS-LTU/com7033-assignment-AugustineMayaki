@@ -12,7 +12,7 @@
             NEUROPREDICT
         </div>
         {% call Card() %}
-            <form method="post" action='/'>
+            <form action='{{ url_for("patient_management") }}'>
                 <h2 class="text-xl 560:text-2xl text-primary-black text-center font-medium">Login</h2>
                 {{ Input(label='Email Address', id='email', name='email', type=email, required=True, placeholder='Enter your email address', input_class='full_rounded_input') }}
                 {{ password_input(label='Password', id='password', name='password', required=True, placeholder='Enter your password', input_class='full_rounded_input') }}
