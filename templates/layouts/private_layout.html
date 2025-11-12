@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "components/sidebar.html" import render as sidebar %}
+{% block content %}
+    {% set navigation_pages = [
+            {'name': 'Patient Management', 'url': url_for('patient_management'), 'icon': 'fas fa-user-injured'},
+        ] %}
+    <div class="flex w-full h-screen overflow-hidden">
+        {{ sidebar(pages=navigation_pages, current_path=request.path) }}
+        <main class="relative flex-1 overflow-y-auto bg-slate-100 h-lvh p-5 pt-7 pb-5 hidden-scrollbar {{ extra_class }}">
+            {% block main_content %}{% endblock %}
+        </main>
+    </div>
+{% endblock %}
