@@ -1,0 +1,20 @@
+{% macro render(
+    container_class='',
+    title_icon='',
+    title='',
+    has_button='',
+    has_border=False, on_click=None,
+    title_class='',button=''
+    )%}
+    <div class="bg-primary-white w-full p-6 rounded-[18px] shadow-lg {{ container_class }}">
+        {% if title or button %}
+            <div class="flex items-center justify-between mb-4">
+                {% if title %}
+                    <p class="!text-nowrap text-lg font-medium text-primary-black {{ title_class }}">{{ title }}</p>
+                {% endif %}
+                {% if button %}<div>{{ button }}</div>{% endif %}
+            </div>
+        {% endif %}
+        {{ caller() }}
+    </div>
+{% endmacro %}
