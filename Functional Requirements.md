@@ -281,7 +281,6 @@ Alternative flows:
 - New password same as temporary password → display error message.
 - New password doesn’t meet requirements → display error message.
 - Employee cancels change password → prompt again on next login.
-
 Post conditions:
 - User account status changed to active.
 - Temporary password and invitation link invalidated.
