@@ -1,0 +1,29 @@
+{% macro render(
+    id,
+    label=None,
+    name=None,
+    value=None,
+    options=None,
+    placeholder='Select option',
+    class_name='',
+    select_class='',
+    disabled=False,
+    required=False
+    ) %}
+    <div class="relative mt-3 {{ class_name }}">
+        {% if label %}<label for="{{ id }}" class="input_label">{{ label }}</label>{% endif %}
+        <div class="relative">
+            <select id="{{ id }}"
+                    {% if name %}name="{{ name }}"{% endif %}
+                    {% if disabled %}disabled{% endif %}
+                    {% if required %}required{% endif %}
+                    class="input full_rounded_input cursor-pointer py-2 {{ select_class }} {% if disabled %}opacity-50 cursor-not-allowed{% endif %}">
+                <option value=""  disabled {% if not value %}selected{% endif %}>{{ placeholder }}</option>
+                {% for option in options or [] %}
+                    <option value="{{ option.value }}"
+                            {% if option.value == value %}selected{% endif %}>{{ option.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+{% endmacro %}

@@ -1,0 +1,14 @@
+{% from "components/card.html" import render as Card %}
+{% macro render(overview_data=[]) %}
+    <div class="flex gap-3  items-stretch overflow-x-auto hidden-scrollbar prim prim min-w-0  p-2">
+        {% for item in overview_data %}
+            {% call Card(container_class=' !border-l-4 border-primary-blue20 !p-4 flex-1 min-w-[260px] w-full flex justify-between flex-col flex-shrink-0 !shadow') %}
+                <div>
+                    <p class="!text-nowrap text-lg font-medium text-primary-black">{{ item.label }}</p>
+                    <p class="text-sm text-[#6a6e75] font-normal">{{ item.description }}</p>
+                    <p class="text-xl 1180:text-2xl font-medium text-primary-blue my-3">{{ item.value }}</p>
+                </div>
+            {% endcall %}
+        {% endfor %}
+    </div>
+{% endmacro %}
