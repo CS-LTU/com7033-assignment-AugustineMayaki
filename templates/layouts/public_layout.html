@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="flex w-full h-screen overflow-hidden">
+    <div class="hidden 1180:block 1180:w-[350px] 1400:w-[367px] sticky top-0 h-full overflow-hidden">
+      <img src="{{ url_for('static', filename='images/chilling.png') }}"
+           alt="Chilling"
+           class="w-full h-full object-cover"
+           width=""
+           height="" />
+    </div>
+    <main class="relative flex-1 p-5 flex justify-center items-center overflow-y-auto bg-slate-100 h-full pt-14 pb-5 hidden-scrollbar {{ extra_class }}">
+      {% block main_content %}{% endblock %}
+    </main>
+  </div>
+{% endblock %}

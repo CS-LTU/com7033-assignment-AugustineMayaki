@@ -1,3 +1,74 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  /* INPUT COMPONENTS */
+  .input {
+    @apply w-full focus:ring-0 focus:outline-none font-medium;
+  }
+
+  .input_label {
+    @apply text-primary-black font-medium text-sm mb-[10px] inline-block;
+  }
+
+  .full_rounded_input {
+    @apply rounded-full h-10 border text-base px-4 py-3 border-primary-gray100 focus:border-primary-blue placeholder:text-primary-gray600 placeholder:font-normal text-primary-gray_main;
+  }
+
+  /* BUTTON */
+  .button {
+    @apply py-3 px-6 rounded-3xl h-10 flex items-center justify-center font-semibold;
+  }
+  .outline_button {
+    @apply border border-primary-main bg-transparent gap-[10px] text-primary-main;
+  }
+  .default_button {
+    @apply bg-primary-blue gap-[10px] text-primary-white w-full;
+  }
+  .subtle_button {
+    @apply bg-primary-blue20 gap-[10px] text-primary-main;
+  }
+
+  /* AUTH */
+  .forgot_password {
+    @apply text-primary-blue border-b border-primary-blue
+ hover:border-primary-blue font-medium text-base w-fit flex items-center gap-1 cursor-pointer hover:text-[#3a7fce];
+  }
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+.hidden-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.hidden-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overflow: -moz-scrollbars-none;
+}
