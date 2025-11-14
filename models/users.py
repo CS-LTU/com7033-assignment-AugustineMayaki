@@ -13,7 +13,7 @@ class RoleTypes:
 
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
+    role_name = db.Column(db.String(50), unique=True, nullable=False)
     
     @staticmethod
     def create_default_roles():
@@ -25,8 +25,8 @@ class Role(db.Model):
         ]
         
         for role_name in roles:
-            if not Role.query.filter_by(name=role_name).first():
-                role = Role(name=role_name)
+            if not Role.query.filter_by(role_name=role_name).first():
+                role = Role(role_name=role_name)
                 db.session.add(role)
         
         db.session.commit()

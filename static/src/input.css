@@ -91,3 +91,67 @@ h1 {
 .no-arrows[type="number"] {
   -moz-appearance: textfield;
 }
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  font: 14px;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  min-width: 250px;
+  max-width: 320px;
+  color: #222;
+  opacity: 0;
+  transform: translateX(100%);
+  animation: slideIn 0.4s ease-out forwards, fadeOut 0.5s ease-in forwards 3s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid transparent;
+}
+
+.toast-success {
+  background: #e6f8ed;
+  color: #1f7a34;
+  border-color: #b0e2bf;
+}
+
+.toast-error {
+  background: #fdecea;
+  color: #b00000;
+  border-color: #f3b2a8;
+}
+
+.toast-warning {
+  background: #fff7d1;
+  color: #8a6f00;
+  border-color: #f0e29b;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

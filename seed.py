@@ -1,18 +1,25 @@
-from models.users import db, User, RoleTypes
+from app import app
+from models.users import db, User, Role, RoleTypes
 from werkzeug.security import generate_password_hash
 
-# Function to seed a default super admin user in the database for login access
 def seed_user():
-    super_admin = User(
-        first_name="Super",
-        last_name="Admin",
-        email="superadmin@example.com",
-        password_hash=generate_password_hash("@Admin123", method="pbkdf2:sha256"),
-        role=RoleTypes.SUPER_ADMIN
-    )
+    with app.app_context():
+        Role.create_default_roles()
+        
+        # Get the super admin role
+        super_admin = Role.query.filter_by(role_name=RoleTypes.SUPER_ADMIN).first()
+        
+        super_admin = User(
+            first_name="Super",
+            last_name="Admin",
+            email="superadmin@example.com",
+            password=generate_password_hash("@Admin123", method='pbkdf2:sha256'),
+            role_id=super_admin.id 
+        )
+        
+        db.session.add(super_admin)
+        db.session.commit()
     
-    db.session.adsd(super_admin)
-    db.session.commit()
     
 if __name__ == '__main__':
     seed_user()
