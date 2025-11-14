@@ -1283,6 +1283,10 @@ body {
   padding-bottom: 1.25rem;
 }
 
+.pl-2 {
+  padding-left: 0.5rem;
+}
+
 .pl-4 {
   padding-left: 1rem;
 }
@@ -1384,6 +1388,11 @@ body {
   color: rgb(17 24 39 / var(--tw-text-opacity, 1));
 }
 
+.text-primary-black300 {
+  --tw-text-opacity: 1;
+  color: rgb(30 41 59 / var(--tw-text-opacity, 1));
+}
+
 .text-primary-blue {
   --tw-text-opacity: 1;
   color: rgb(21 101 192 / var(--tw-text-opacity, 1));
@@ -1396,6 +1405,11 @@ body {
 .text-red-600 {
   --tw-text-opacity: 1;
   color: rgb(220 38 38 / var(--tw-text-opacity, 1));
+}
+
+.text-red-700 {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity, 1));
 }
 
 .text-slate-400 {
@@ -1426,16 +1440,6 @@ body {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-
-.text-red-500 {
-  --tw-text-opacity: 1;
-  color: rgb(239 68 68 / var(--tw-text-opacity, 1));
-}
-
-.text-red-700 {
-  --tw-text-opacity: 1;
-  color: rgb(185 28 28 / var(--tw-text-opacity, 1));
 }
 
 .opacity-50 {
@@ -1541,6 +1545,73 @@ h1 {
   -moz-appearance: textfield;
 }
 
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  font: 14px;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  min-width: 250px;
+  max-width: 320px;
+  color: #222;
+  opacity: 0;
+  transform: translateX(100%);
+  animation: slideIn 0.4s ease-out forwards, fadeOut 0.5s ease-in forwards 3s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid transparent;
+}
+
+.toast-success {
+  background: #e6f8ed;
+  color: #1f7a34;
+  border-color: #b0e2bf;
+}
+
+.toast-error {
+  background: #fdecea;
+  color: #b00000;
+  border-color: #f3b2a8;
+}
+
+.toast-warning {
+  background: #fff7d1;
+  color: #8a6f00;
+  border-color: #f0e29b;
+}
+
+/* Animations */
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
 .hover\:bg-slate-50:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(248 250 252 / var(--tw-bg-opacity, 1));
@@ -1573,6 +1644,11 @@ h1 {
 
   .\36 40\:pl-6 {
     padding-left: 1.5rem;
+  }
+
+  .\36 40\:text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
   }
 
   .sm\:px-6 {

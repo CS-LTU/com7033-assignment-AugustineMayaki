@@ -14,3 +14,13 @@ ENV/
 # Node
 node_modules/
 package-lock.json
+
+
+# Database
+instance/
+neuroPredict
+*.sqlite3
+*.db
+
+delete_db.py
+delete_database.py
