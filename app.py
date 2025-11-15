@@ -1,5 +1,6 @@
 from flask import Flask, flash, render_template, request, redirect, session, url_for 
 from models.users import db, User
+from utils.auth import auth_required
 import os
 
 app = Flask(__name__)
@@ -79,16 +80,17 @@ def set_password():
 @app.route("/logout")
 def logout():
     session.clear() 
+    flash("You have logged out successfuly", "info")
     return redirect(url_for('login'))
 
 @app.route("/patient-management")
+@auth_required
 def patient_management():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
     return render_template('pages/patient_management.html', patients_overview=PATIENTS_OVERVIEW, user=session)
 
 
 @app.route("/users-management")
+@auth_required
 def users_management():
     users = db.session.query(User).order_by(User.created_at.desc()).all()
     total_users = db.session.query(User).count()
@@ -116,6 +118,9 @@ def users_management():
                          users=users, 
                          users_overview=users_overview)
 
+
+
+    
 
 
 if __name__=='__main__':
