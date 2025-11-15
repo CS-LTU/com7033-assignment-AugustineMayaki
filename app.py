@@ -51,7 +51,7 @@ def login():
             # Redirect user to different page based on their role
             if user.is_super_admin():
                 flash("Login successfully", "success")
-                return redirect(url_for('patient_management'))
+                return redirect(url_for('users_management'))
             elif user.is_doctor():
                 print("Doctor logged in")
                 return redirect(url_for('patient_management')) 
@@ -88,7 +88,34 @@ def patient_management():
     return render_template('pages/patient_management.html', patients_overview=PATIENTS_OVERVIEW, user=session)
 
 
-print(  "Starting the Flask application..."  )
+@app.route("/users-management")
+def users_management():
+    users = db.session.query(User).order_by(User.created_at.desc()).all()
+    total_users = db.session.query(User).count()
+    
+    users_overview = [
+        {
+            "label": "Total Users",
+            "value": total_users,
+            "description": "Total registered users in the system"
+        },
+        {
+            "label": "Confirmed Users", 
+            "value": 0,
+            "description": "Total users confirmed their accounts"
+        },
+        {
+            "label": "Unconfirmed Users",
+            "value": 0,
+            "description": "Total users pending confirmation"
+        }
+    ]
+    
+    return render_template('pages/users_management.html', 
+                         user_count=total_users, 
+                         users=users, 
+                         users_overview=users_overview)
+
 
 
 if __name__=='__main__':

@@ -1,0 +1,111 @@
+{% extends "layouts/private_layout.html" %}
+{% from "components/card.html" import render as Card %}
+{% from "components/button.html" import render as Button %}
+{% from "components/modal.html" import render as Modal %}
+{% from "components/Input.html" import render as Input %}
+{% from "components/overview_card.html" import render as overview_cards %}
+{% from "components/dropdown.html" import render as Dropdown %}
+{% block main_content %}
+    {% set options = [
+        {
+            "label": "  Admin",
+            "value": "admin"
+        },
+        {
+            "label": "Doctor",
+            "value": "doctor"
+        },
+        {
+            "label": "Nurse",
+            "value": "nurse"
+        }
+    ] %}
+    <h1 class="text-primary-black300 font-medium text-lg 640:text-xl pl-2">
+        Welcome, {{ session.first_name }} {{ session.last_name }}!
+    </h1>
+    <div x-data="{ inviteModalOpen: false, isdropdownOpen: false }">
+        {{ overview_cards(overview_data=users_overview) }}
+        <div class="max-w-7xl mx-auto mt-6">
+            {% set add_button %}
+                <div @click="inviteModalOpen = true">
+                    {% call Button(button_class='default_button !px-3 !text-sm') %}
+                        Invite
+                    {% endcall %}
+                </div>
+            {% endset %}
+            {% call Card(
+                container_class='flex flex-col max-h-[calc(100vh-56px)]',
+                title='Users',
+                button=add_button
+                ) %}
+                <div class="flex flex-col flex-1 overflow-y-auto hidden-scrollbar">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50 sticky top-0 z-10">
+                            <tr>
+                                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">ID</th>
+                                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Date</th>
+                                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Name</th>
+                                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Email</th>
+                                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Role</th>
+                                <th class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 bg-white">
+                            {% for u in users %}
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ u.id }}</td>
+                                    <td class="px-4 sm:px-6 py-3 text-sm font-medium text-slate-800">{{ u.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ u.first_name }} {{ u.last_name }}</td>
+                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ u.email }}</td>
+                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ u.role.role_name }}</td>
+                                    <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2">
+                                        <a href="#"
+                                           class="inline-flex items-center gap-1 text-red-600 hover:underline">Deatctivate</a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="px-4 sm:px-6 py-6 text-center text-slate-500">No Users found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endcall %}
+        </div>
+        {% call Modal(
+            id='inviteUserModal',
+            class_name='max-w-lg',
+            is_open='inviteModalOpen'
+            ) %}
+            <h2 class="text-xl font-semibold text-primary-black mb-4">Invite User</h2>
+            <form>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center gap-4">
+                        {{ Input(label='First Name', placeholder='Enter first name', input_class='full_rounded_input', name='first_name', id='first_name') }}
+                        {{ Input(label='Last Name', placeholder='Enter last name', input_class='full_rounded_input', name='last_name', id='last_name') }}
+                    </div>
+                    {{ Input(label='Email', placeholder='Enter email address', input_type='email', input_class='full_rounded_input', name='email', id='email') }}
+                    {{ Dropdown(id='roleDropdown',
+                                        name='role',
+                                        label='Role',
+                                        options=options,
+                                        placeholder='Select Role',
+                                        class_name='w-full',) }}
+                </div>
+                <div class="flex gap-4 justify-end mt-6">
+                    <div>
+                        {% call Button
+                            (type='button',
+                            on_click='inviteModalOpen= false', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50') %}
+                            Cancel
+                        {% endcall %}
+                    </div>
+                    {% call Button(button_class='default_button') %}
+                        Invite
+                    {% endcall %}
+                </div>
+            </form>
+        {% endcall %}
+    </div>
+{% endblock %}

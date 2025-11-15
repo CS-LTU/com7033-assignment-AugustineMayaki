@@ -3,6 +3,7 @@
 {% block content %}
     {% set navigation_pages = [
             {'name': 'Patient Management', 'url': url_for('patient_management'), 'icon': 'fas fa-user-injured'},
+            {'name': 'Users Management', 'url': url_for('users_management'), 'icon': 'fas fa-users'},
         ] %}
     <div class="flex w-full h-screen overflow-hidden">
         {{ sidebar(pages=navigation_pages, current_path=request.path) }}
