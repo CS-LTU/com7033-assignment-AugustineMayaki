@@ -19,6 +19,7 @@ def seed_user():
         
         db.session.add(super_admin)
         db.session.commit()
+        print("Super admin user created successfully!")
     
     
 if __name__ == '__main__':
