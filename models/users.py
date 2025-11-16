@@ -33,13 +33,15 @@ class Role(db.Model):
 # This is the class model for the user table
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
+    employee_id = db.Column(db.String(6), db.ForeignKey('employee.employee_id'), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=True)
-    role = db.relationship('Role', backref='users', lazy=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
+    upated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship to Employee table
+    employee = db.relationship('Employee', backref='user', uselist=False)
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

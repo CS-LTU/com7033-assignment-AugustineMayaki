@@ -26,17 +26,9 @@
     <div x-data="{ inviteModalOpen: false, isdropdownOpen: false }">
         {{ overview_cards(overview_data=users_overview) }}
         <div class="max-w-7xl mx-auto mt-6">
-            {% set add_button %}
-                <div @click="inviteModalOpen = true">
-                    {% call Button(button_class='default_button !px-3 !text-sm') %}
-                        Invite
-                    {% endcall %}
-                </div>
-            {% endset %}
             {% call Card(
                 container_class='flex flex-col max-h-[calc(100vh-56px)]',
                 title='Users',
-                button=add_button
                 ) %}
                 <div class="flex flex-col flex-1 overflow-y-auto hidden-scrollbar">
                     <table class="min-w-full divide-y divide-slate-200">
@@ -47,6 +39,7 @@
                                 <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Name</th>
                                 <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Email</th>
                                 <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Role</th>
+                                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Staus</th>
                                 <th class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Action</th>
                             </tr>
                         </thead>
@@ -55,12 +48,24 @@
                                 <tr class="hover:bg-slate-50">
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ u.id }}</td>
                                     <td class="px-4 sm:px-6 py-3 text-sm font-medium text-slate-800">{{ u.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
-                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ u.first_name }} {{ u.last_name }}</td>
+                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ u.employee.first_name }} {{ u.employee.last_name }}</td>
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ u.email }}</td>
-                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ u.role.role_name }}</td>
+                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ u.employee.role }}</td>
+                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">
+                                        {% if u.is_active %}
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Active
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                Inactive
+                                            </span>
+                                        {% endif %}
+                                    </td>
                                     <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2">
-                                        <a href="#"
-                                           class="inline-flex items-center gap-1 text-red-600 hover:underline">Deatctivate</a>
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
+                                            Deactivate
+                                        </span>
                                     </td>
                                 </tr>
                             {% else %}
@@ -73,39 +78,5 @@
                 </div>
             {% endcall %}
         </div>
-        {% call Modal(
-            id='inviteUserModal',
-            class_name='max-w-lg',
-            is_open='inviteModalOpen'
-            ) %}
-            <h2 class="text-xl font-semibold text-primary-black mb-4">Invite User</h2>
-            <form>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center gap-4">
-                        {{ Input(label='First Name', placeholder='Enter first name', input_class='full_rounded_input', name='first_name', id='first_name') }}
-                        {{ Input(label='Last Name', placeholder='Enter last name', input_class='full_rounded_input', name='last_name', id='last_name') }}
-                    </div>
-                    {{ Input(label='Email', placeholder='Enter email address', input_type='email', input_class='full_rounded_input', name='email', id='email') }}
-                    {{ Dropdown(id='roleDropdown',
-                                        name='role',
-                                        label='Role',
-                                        options=options,
-                                        placeholder='Select Role',
-                                        class_name='w-full',) }}
-                </div>
-                <div class="flex gap-4 justify-end mt-6">
-                    <div>
-                        {% call Button
-                            (type='button',
-                            on_click='inviteModalOpen= false', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50') %}
-                            Cancel
-                        {% endcall %}
-                    </div>
-                    {% call Button(button_class='default_button') %}
-                        Invite
-                    {% endcall %}
-                </div>
-            </form>
-        {% endcall %}
     </div>
 {% endblock %}

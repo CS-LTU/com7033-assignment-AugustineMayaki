@@ -20,6 +20,8 @@
                     <span>Login</span>
                 {% endcall %}
                 <div class="mt-3 mb-2 flex justify-between">
+                    <a href='{{ url_for("register") }}'
+                       class="forgot_password cursor-pointer text-sm">New to the team? Sign up</a>
                     <a href='{{ url_for("forgot_password") }}'
                        class="forgot_password cursor-pointer text-sm">Forgot password?</a>
                 </div>
