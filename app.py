@@ -1,9 +1,14 @@
 from flask import Flask, flash, render_template, request, redirect, session, url_for 
-from models.users import db, User
-from models.employee import Employee
-from utils.auth import auth_required
+from models.users import db
 import os
-import re
+from utils.auth import auth_required
+from utils.auth import (
+    handle_login, get_user_redirect_by_role, validate_registration_data,
+    validate_credentials, create_user,
+    store_form_data_in_session, get_and_clear_form_data
+)
+from utils.users import get_users_overview, get_all_users, get_user_count
+from utils.patients import get_patients_overview
 
 app = Flask(__name__)
 
@@ -18,54 +23,18 @@ db.init_app(app)
 def create_tables():
     db.create_all()
 
-PATIENTS_OVERVIEW=[
-    
-    {
-        "label": "Total Patients",
-        "value": "1,234",
-        "description": "Registered patients in the system"
-    },
-    {
-        "label": "Total Users",
-        "value": "56",
-        "description": "Active users managing data"
-    },
-    {
-        "label": "Total Predictions",
-        "value": "3,421",
-        "description": "Stroke predictions made"
-    }
-]
-
-
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '').strip()
-        user = User.query.filter_by(email=email).first()
-        if user and user.check_password(password):
-            session['user_id'] = user.id
-            session['email'] = user.email
-            # Get first_name and last_name from Employee table through relationship
-            session['first_name'] = user.employee.first_name if user.employee else 'Unknown'
-            session['last_name'] = user.employee.last_name if user.employee else 'User'
-            session['role'] = user.employee.role if user.employee else None
-            
-            # Redirect user to different page based on their role
-            role = session.get('role', '').lower()
-            if role == 'super admin':
-                flash("Login successfully", "success")
-                return redirect(url_for('users_management'))
-            elif role == 'doctor':
-                print("Doctor logged in")
-                return redirect(url_for('patient_management')) 
-            elif role == 'nurse':
-                print("Nurse logged in")
-                return redirect(url_for('patient_management'))
+        
+        if handle_login(email, password):
+            flash("Login successfully", "success")
+            return redirect(get_user_redirect_by_role())
         else:
             flash('Invalid email or password', 'error')
-            return render_template('pages/auth/login.html', email=email)  # Do not pass password
+            return render_template('pages/auth/login.html', email=email)
     
     return render_template('pages/auth/login.html')
 
@@ -76,58 +45,33 @@ def register():
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '').strip()
         
-        # Basic validation
-        if not employee_id or not email or not password:
-            flash('Please fill out all required fields', 'error')
-            return render_template('pages/auth/register.html')
+        # Store form data in session for persistence
+        store_form_data_in_session(employee_id, email)
         
-        # Employee ID pattern validation (6 alphanumeric characters)
-        if len(employee_id) != 6 or not employee_id.isalnum():
-            flash('Employee ID must be exactly 6 alphanumeric characters', 'error')
-            return render_template('pages/auth/register.html')
+        # Validate registration data
+        error = validate_registration_data(employee_id, email, password)
+        if error:
+            flash(error, 'error')
+            return redirect(url_for('register'))
         
-        # Email pattern validation
-        email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-        if not re.match(email_pattern, email):
-            flash('Please enter a valid email address', 'error')
-            return render_template('pages/auth/register.html')
+        # Check if credentials are valid
+        error = validate_credentials(employee_id, email)
+        if error:
+            flash(error, 'error')
+            return redirect(url_for('register'))
         
-        # Password strength validation
-        pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,}$'
-        if not re.match(pattern, password):
-            flash("Password must be 8+ chars and include upper, lower, digit and special char.", "error")
-            return render_template('pages/auth/register.html')
+        # Create the user
+        create_user(employee_id, email, password)
         
-        # Check if employee_id and email exist together in the same row in Employee table
-        employee = Employee.query.filter_by(employee_id=employee_id, email=email).first()
-        if not employee:
-            flash('Employee ID and email do not match our records. Please contact admin.', 'error')
-            return render_template('pages/auth/register.html')
-        
-        # Check if email already exists in User table
-        if User.query.filter_by(email=email).first():
-            flash('Email already registered. Please use a different email.', 'error')
-            return render_template('pages/auth/register.html')
-            
-        # Check if employee_id already registered in User table
-        if User.query.filter_by(employee_id=employee_id).first():
-            flash('Employee ID already registered. Please use a different Employee ID.', 'error')
-            return render_template('pages/auth/register.html')
-        
-        # Register the user
-        user = User(
-            employee_id=employee_id,
-            email=email
-        )
-        user.set_password(password) 
-        
-        db.session.add(user)
-        db.session.commit()
+        # Clear form data on successful registration
+        session.pop('form_data', None)
         
         flash('Registration successful! You can now login.', 'success')
         return redirect(url_for('login'))
     
-    return render_template('pages/auth/register.html')
+    # for GET request - gets form data from session if available
+    form_data = get_and_clear_form_data()
+    return render_template('pages/auth/register.html', form_data=form_data)
 
 
 @app.route("/forgot-password")
@@ -151,22 +95,15 @@ def logout():
 @app.route("/patient-management")
 @auth_required
 def patient_management():
-    return render_template('pages/patient_management.html', patients_overview=PATIENTS_OVERVIEW, user=session)
+    return render_template('pages/patient_management.html', patients_overview=get_patients_overview(), user=session)
 
 
 @app.route("/users-management")
 @auth_required
 def users_management():
-    # Get users with employee information
-    users = db.session.query(User).order_by(User.created_at.desc()).all()
-    total_users = db.session.query(User).count()
-    users_overview = [
-        {
-            "label": "Total Users",
-            "value": total_users,
-            "description": "Total registered users in the system"
-        },
-    ]
+    users = get_all_users()
+    total_users = get_user_count()
+    users_overview = get_users_overview()
     
     return render_template('pages/users_management.html', 
                          user_count=total_users, 
