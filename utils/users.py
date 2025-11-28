@@ -9,6 +9,12 @@ def get_users_overview():
 
     cursor.execute("SELECT COUNT(*) FROM users")
     total_users = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM users WHERE is_active = 1")
+    active_users = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM users WHERE is_active = 0")
+    inactive_users = cursor.fetchone()[0]
 
     conn.close()
 
@@ -17,6 +23,16 @@ def get_users_overview():
             "label": "Total Users",
             "value": total_users,
             "description": "Total registered users in the system"
+        },
+        {
+            "label": "Active Users",
+            "value": active_users,
+            "description": "Users with active accounts"
+        },
+        {
+            "label": "Inactive Users",
+            "value": inactive_users,
+            "description": "Users with inactive accounts"
         }
     ]
 
