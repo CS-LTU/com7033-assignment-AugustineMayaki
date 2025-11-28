@@ -20,9 +20,7 @@
             "value": "other"
         }
     ] %}
-    <h1 class="text-primary-black300 font-medium text-lg 640:text-xl pl-2">
-        Welcome, {{ session.first_name }} {{ session.last_name }}!
-    </h1>
+    <h1 class="text-primary-black300 font-medium text-lg 640:text-xl pl-2">Welcome!</h1>
     {{ overview_cards(overview_data=patients_overview) }}
     <div x-data="{ registerModal :  false }" class="max-w-7xl mx-auto mt-6">
         {% set add_button %}
