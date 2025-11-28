@@ -1,62 +1,78 @@
 from functools import wraps
-from flask import session, redirect, url_for, flash
+from flask import session, url_for, flash
 from models.users import User
-from constants.role_types import RoleTypes
 import re
-from models.employee import Employee
 import sqlite3
 from utils.init_db import db_name
 from utils.users import find_user_by_email
 from werkzeug.security import generate_password_hash
 
 
-def auth_required(f):
-    
-    # This is a reusable decorator that requires authentication for routes.
-    # It checks if user_id exists in session, redirects to login if not authenticated.
-    
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if 'user_id' not in session:
-            flash("Please log in to access this page.", "error")
-            return redirect(url_for('login'))
-        
-        # If the user is authenticated it proceeds with the original function
-        return f(*args, **kwargs)
-    
-    return decorated
-
 
 def handle_login(email, password):
     """
-    Handle current user login:
     Find the current user by their email.
     Verify the password using check_password method.
-    Store necessary current user Id in the session.
+    check of the account is active
+    Store only user ID in the session for security.
     """
-    current_user = find_user_by_email(email) 
+    current_user = find_user_by_email(email)
 
-    if current_user and current_user.check_password(password):  
-        # Store current user information in the session
-        session['user_id'] = current_user.id
-        session['role'] = current_user.get_role()
+    if current_user and current_user.check_password(password):
+        # Check if account is active
+        if not current_user.is_account_active():
+            flash('Your account is inactive, please contact admin', 'error')
+            return False 
         
+        session['user_id'] = current_user.id
         return True 
     
+    flash('Invalid email or password', 'error')
     return False
+
+def get_current_user():
+    """
+    Get current user object from database using session user_id.
+    Returns User object or None if not authenticated.
+    """
+    user_id = session.get('user_id')
+    if not user_id:
+        return None
+    
+    conn = sqlite3.connect(db_name())
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+    SELECT id, employee_id, email, is_active
+    FROM users
+    WHERE id = ?
+    ''', (user_id,))
+    row = cursor.fetchone()
+    conn.close()
+    
+    if row:
+        return User(*row)
+    return None
 
 
 def redirect_user_by_role():
     """
-    Redirect the user to the appropriate route.
+    Redirect the user to the appropriate page based on their role.
+    Get role from database via User object methods for security.
     """
-    role = session.get('role', '')
-    if role == RoleTypes.SUPER_ADMIN:
+    current_user = get_current_user()
+    
+    if not current_user:
+        return url_for('login')
+    
+    # Use User object methods to check role securely
+    if current_user.is_super_admin():
         return url_for('users_management')
-    elif role == RoleTypes.DOCTOR:
+    elif current_user.is_doctor():
         return url_for('patient_management')
-    elif role == RoleTypes.NURSE:
+    elif current_user.is_nurse():
         return url_for('patient_management')
+    
     return url_for('login')
 
 

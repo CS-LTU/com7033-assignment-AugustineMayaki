@@ -89,3 +89,37 @@ def find_user_by_email(email):
     if row:
         return User(*row)  
     return None 
+
+def deactivate_user(user_id):
+    """
+    Deactivate a user by setting is_active to False.
+    """
+    conn = sqlite3.connect(db_name())
+    cursor = conn.cursor()
+
+    cursor.execute('''
+    UPDATE users
+    SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+    ''', (user_id,))
+    
+    conn.commit()
+    conn.close()
+    return True
+
+def activate_user(user_id):
+    """
+    Activate a user by setting is_active to True.
+    """
+    conn = sqlite3.connect(db_name())
+    cursor = conn.cursor()
+
+    cursor.execute('''
+    UPDATE users
+    SET is_active = 1, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+    ''', (user_id,))
+    
+    conn.commit()
+    conn.close()
+    return True

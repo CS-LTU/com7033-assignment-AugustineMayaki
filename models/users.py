@@ -79,3 +79,6 @@ class User:
     def is_nurse(self):
         role = self.get_role()
         return role and role.lower() == RoleTypes.NURSE
+    
+    def is_account_active(self):
+        return self.is_active

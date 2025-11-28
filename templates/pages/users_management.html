@@ -60,17 +60,31 @@
                                             </span>
                                         {% endif %}
                                     </td>
-                                    {% if u.is_active %}
-                                        <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2">
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
-                                                Deactivate
-                                            </span>
-                                        </td>
+                                    {% if u.role != 'super admin' %}
+                                        {% if u.is_active %}
+                                            <form method="post"
+                                                  action="{{ url_for('deactivate_user_route', user_id=u.id) }}">
+                                                <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2">
+                                                    <button type="submit"
+                                                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
+                                                        Deactivate
+                                                    </button>
+                                                </td>
+                                            </form>
+                                        {% else %}
+                                            <form method="post"
+                                                  action="{{ url_for('activate_user_route', user_id=u.id) }}">
+                                                <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2">
+                                                    <button type="submit"
+                                                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer">
+                                                        Activate
+                                                    </button>
+                                                </td>
+                                            </form>
+                                        {% endif %}
                                     {% else %}
                                         <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2">
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer">
-                                                Activate
-                                            </span>
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">---</span>
                                         </td>
                                     {% endif %}
                                 </tr>
