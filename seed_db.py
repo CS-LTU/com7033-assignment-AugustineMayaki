@@ -1,68 +1,77 @@
 import csv
 import os
-from app import app
-from models.users import db, Role
-from models.employee import Employee
-from werkzeug.security import generate_password_hash
+from models.users import init_users
+from models.roles import init_roles
+from models.employee import init_employee, Employee
+import sqlite3
+from utils.init_db import db_name
 
 def delete_and_create_database():
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
+    """
+    Drop and recreate the database tables.
+    """
+    # Create instance directory if it doesn't exist
+    os.makedirs('instance', exist_ok=True)
+    
+    conn = sqlite3.connect(db_name())
+    cursor = conn.cursor()
+    
+    # Drop tables if exist 
+    cursor.execute("DROP TABLE IF EXISTS users")
+    cursor.execute("DROP TABLE IF EXISTS employee")
+    cursor.execute("DROP TABLE IF EXISTS roles")
 
+    conn.commit()
+    conn.close()  
+    
+    # Recreate tables individually
+    init_roles()
+    init_employee()
+    init_users()
 
 def seed_database():
-    with app.app_context():
-        try:
-            # Try to query a table to see if database exists
-            Role.query.first()
-        except:
-            delete_and_create_database()
-            
-        # Ensure tables exist
-        db.create_all()
+    print("Deleting and recreating database...")
+    delete_and_create_database()
+    print("Tables created.")
+    
+    print("Seeding database with initial data...")
+    # Open database connection
+    conn = sqlite3.connect(db_name())
+    cursor = conn.cursor()
+    
+    print("Creating employees from CSV...")
+    csv_file = 'employees.csv'
         
-        # Create default roles
-        Role.create_default_roles()
-        
-        # Create employees from CSV (if available)
-        print("👥 Creating employees from CSV...")
-        csv_file = 'employees.csv'
-        
-        if os.path.exists(csv_file):
-            with open(csv_file, 'r') as file:
-                reader = csv.DictReader(file)
-                employee_count = 0
+    if os.path.exists(csv_file):
+        with open(csv_file, 'r') as file:
+            reader = csv.DictReader(file)
+            inserted = 0
+            skipped = 0
                 
-                for row in reader:
-                    employee_id = row['employee_id'].strip()
-                    
-                    # Check if employee already exists
-                    existing_employee = Employee.query.filter_by(employee_id=employee_id).first()
-                    if existing_employee:
-                        print(f"⏭️  Employee {employee_id} already exists")
-                        continue
-                    
-                    employee = Employee(
-                        first_name=row['first_name'].strip(),
-                        last_name=row['last_name'].strip(),
-                        email=row['email'].strip(),
-                        employee_id=employee_id,
-                        role=row['role'].strip()
-                    )
-                    
-                    db.session.add(employee)
-                    employee_count += 1
+            for row in reader:
+                employee_id = row["employee_id"].strip()
+                first = row["first_name"].strip()
+                last = row["last_name"].strip()
+                email = row["email"].strip()
+                role = row["role"].strip()
                 
-                if employee_count > 0:
-                    db.session.commit()
-                    print(f"✅ {employee_count} employees created successfully!")
+                cursor.execute("""
+                    INSERT OR IGNORE INTO employee (employee_id, first_name, last_name, email, role)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (employee_id, first, last, email, role))
+                if cursor.rowcount == 1:
+                    inserted += 1
                 else:
-                    print("No new employees to create.")
-        else:
-            print("employees.csv not found, skipping employee creation")
-        
-        print(" Database seeding completed successfully!")
+                    skipped += 1
+            
+            print(f"{inserted} employees inserted.")
+            print(f"{skipped} duplicates skipped.")
+    else:
+        print("employees.csv not found, skipping.")
+    
+    conn.commit()
+    conn.close()
+    print("Database seeding completed successfully!")
 
 if __name__ == '__main__':
     seed_database()

@@ -1,13 +1,37 @@
+import sqlite3
+from utils.init_db import db_name
 
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-from models.users import db
+def init_employee():
+    """
+    Create the employee table.
+    """
+    conn = sqlite3.connect(db_name())
+    cursor = conn.cursor()
+    
+    # Create the employee table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS employee (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        employee_id TEXT UNIQUE NOT NULL,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        role TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    conn.commit()
+    conn.close()
 
-class Employee(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    employee_id = db.Column(db.String(6), unique=True, nullable=False)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    role = db.Column(db.String(50), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+class Employee:
+    """
+    A class to represent.
+    """
+    def __init__(self, employee_id, first_name, last_name, email, role, created_at=None):
+        self.employee_id = employee_id
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.role = role
+        self.created_at = created_at

@@ -1,65 +1,81 @@
-import sqlalchemy
-from flask_sqlalchemy import SQLAlchemy
+import sqlite3
+from utils.init_db import db_name
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from constants.role_types import RoleTypes
 
-db = SQLAlchemy()
+def init_users():
+    """
+    Create the users table.
+    """
+    conn = sqlite3.connect(db_name())
+    cursor = conn.cursor()
 
-# Define the available roles
-class RoleTypes:
-    SUPER_ADMIN = 'super admin'
-    DOCTOR = 'doctor'
-    NURSE = 'nurse'
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (    
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        employee_id TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        is_active BOOLEAN DEFAULT 1,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (employee_id) REFERENCES employee(employee_id)
+    )
+    ''')
 
-class Role(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    role_name = db.Column(db.String(50), unique=True, nullable=False)
-    
-    @staticmethod
-    def create_default_roles():
-        # a function to create 3 roles
-        roles = [
-            RoleTypes.SUPER_ADMIN,
-            RoleTypes.DOCTOR,
-            RoleTypes.NURSE
-        ]
+    conn.commit()
+    conn.close()
+
+class User:
+    """
+    A class to represent the user and perform user-related operations.
+    """
+    def __init__(self, id, employee_id, email, password_hash=None, is_active=True):
+        self.id = id
+        self.employee_id = employee_id
+        self.email = email
+        self.password_hash = password_hash
+        self.is_active = bool(is_active)
+        self._role = None  # Cache for role from Employee table
         
-        for role_name in roles:
-            if not Role.query.filter_by(role_name=role_name).first():
-                role = Role(role_name=role_name)
-                db.session.add(role)
-        
-        db.session.commit()
-# This is the class model for the user table
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    employee_id = db.Column(db.String(6), db.ForeignKey('employee.employee_id'), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    is_active = db.Column(db.Boolean, default=True)
-    upated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationship to Employee table
-    employee = db.relationship('Employee', backref='user', uselist=False)
-    
+   
+    # Password management methods
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-        
+
     def check_password(self, password):
-        if self.password_hash is None:
+        if not self.password_hash:
             return False
         return check_password_hash(self.password_hash, password)
     
-    # Functions to check user roles
+    def get_role(self):
+        """
+        Get user role from Employee table
+        """
+        if self._role is None:  # Only query the db if the role is not already cached
+        
+            conn = sqlite3.connect(db_name())
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+            SELECT role FROM employee WHERE employee_id = ?''', (self.employee_id,))
+            result = cursor.fetchone()
+            conn.close()
+        
+            if result:
+                self._role = result[0]  # Cache the role
+        
+        return self._role 
+    
+    # User role-checking methods
     def is_super_admin(self):
-        return self.role and self.role.role_name == RoleTypes.SUPER_ADMIN
-    
-    def is_doctor(self):
-        return self.role and self.role.role_name == RoleTypes.DOCTOR
-    
-    def is_nurse(self):
-        return self.role and self.role.role_name == RoleTypes.NURSE
+        role = self.get_role()
+        return role and role.lower() == RoleTypes.SUPER_ADMIN
 
-   
-    
+    def is_doctor(self):
+        role = self.get_role()
+        return role and role.lower() == RoleTypes.DOCTOR
+
+    def is_nurse(self):
+        role = self.get_role()
+        return role and role.lower() == RoleTypes.NURSE
