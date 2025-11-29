@@ -2,6 +2,7 @@ import csv
 import os
 from models.users import init_users
 from models.roles import init_roles
+from models.patients import init_patients_demographics
 from models.employee import init_employee, Employee
 import sqlite3
 from utils.init_db import db_name
@@ -20,6 +21,8 @@ def delete_and_create_database():
     cursor.execute("DROP TABLE IF EXISTS users")
     cursor.execute("DROP TABLE IF EXISTS employee")
     cursor.execute("DROP TABLE IF EXISTS roles")
+    cursor.execute("DROP TABLE IF EXISTS patients_demographics")
+    
 
     conn.commit()
     conn.close()  
@@ -28,6 +31,7 @@ def delete_and_create_database():
     init_roles()
     init_employee()
     init_users()
+    init_patients_demographics()
 
 def seed_database():
     print("Deleting and recreating database...")
@@ -73,5 +77,29 @@ def seed_database():
     conn.close()
     print("Database seeding completed successfully!")
 
+def create_new_table_only():
+    """
+    Create only the new patients_demographics table without touching existing tables.
+    """
+    
+    # Create instance directory if it doesn't exist
+    os.makedirs('instance', exist_ok=True)
+    
+    conn = sqlite3.connect(db_name())
+    cursor = conn.cursor()
+    
+    # Drop tables if exist 
+    print("Dropping existing patients_demographics table if it exists...")
+    cursor.execute("DROP TABLE IF EXISTS patients_demographics")
+    
+
+    conn.commit()
+    conn.close()  
+    print("Creating new patients_demographics table...")
+    init_patients_demographics()
+    print("patients_demographics table created successfully!")
+
 if __name__ == '__main__':
-    seed_database()
+    create_new_table_only()
+      
+    # seed_database()
