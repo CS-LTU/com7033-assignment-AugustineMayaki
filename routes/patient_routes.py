@@ -41,4 +41,13 @@ def init_patient_routes(app):
         # GET request - show registration form
         return render_template('pages/patient_management.html', patients_overview=get_patients_statistics(), patients=get_all_patients())
             
+    @app.route("/patient-management/patient/<int:patient_id>")
+    @auth_required
+    @doctor_required
+    def patient_info(patient_id):
+        patient = get_patient_by_id(patient_id)
+        if not patient:
+            flash("Patient not found.", "error")
+            return redirect(url_for('patient_management'))
         
+        return render_template('pages/patient_info.html', patient=patient)

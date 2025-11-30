@@ -24,15 +24,15 @@
     {{ overview_cards(overview_data=patients_overview) }}
     <div x-data="{ registerModal :  false }" class="max-w-7xl mx-auto mt-6">
         {% if current_user and current_user.is_super_admin() %}
-        {% set add_button %}
-            <div @click="registerModal=true">
-                {% call Button(button_class='default_button !px-3 !text-sm') %}
-                    Add New
-                {% endcall %}
-            </div>
-        {% endset %}
+            {% set add_button %}
+                <div @click="registerModal=true">
+                    {% call Button(button_class='default_button !px-3 !text-sm') %}
+                        Add New
+                    {% endcall %}
+                </div>
+            {% endset %}
         {% else %}
-        {% set add_button = '' %}
+            {% set add_button = "" %}
         {% endif %}
         {% call Card(
             container_class='flex flex-col max-h-[calc(100vh-56px)]',
@@ -60,7 +60,9 @@
                                 <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.gender }}</td>
                                 <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.created_at }}</td>
                                 <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2 flex justify-between items-center">
-                                    <form method="post" action="#" class="inline">
+                                    <form method="get"
+                                          action="{{ url_for('patient_info', patient_id=p.id) }}"
+                                          class="inline">
                                         <button type="submit"
                                                 class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:!bg-green-200 cursor-pointer">
                                             View
