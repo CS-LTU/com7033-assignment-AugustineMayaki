@@ -16,6 +16,7 @@ def init_patient_routes(app):
                              patients=get_all_patients(),
                              current_user=current_user)
     
+    
     @app.route("/register-patient", methods=['GET', 'POST'])
     @auth_required
     @admin_required
@@ -41,6 +42,7 @@ def init_patient_routes(app):
         # GET request - show registration form
         return render_template('pages/patient_management.html', patients_overview=get_patients_statistics(), patients=get_all_patients())
             
+            
     @app.route("/patient-management/patient/<int:patient_id>")
     @auth_required
     @doctor_required
@@ -51,3 +53,26 @@ def init_patient_routes(app):
             return redirect(url_for('patient_management'))
         
         return render_template('pages/patient_info.html', patient=patient)
+    
+    
+    @app.route("/patient-management/patient/<int:patient_id>/update", methods=['GET', 'POST'])
+    @auth_required
+    @doctor_required
+    def update_patient_route(patient_id):
+        if request.method == 'POST':
+            try:
+                first_name = request.form.get('first_name', '').strip()
+                last_name = request.form.get('last_name', '').strip()
+                date_of_birth = request.form.get('date_of_birth', '').strip()
+                gender = request.form.get('gender', '').strip()
+                
+                validate_patient_data(date_of_birth=date_of_birth, gender=gender)
+                update_patient(patient_id, first_name, last_name, date_of_birth, gender)
+                flash('Patient information updated successfully!', 'success')
+                return redirect(url_for('patient_info', patient_id=patient_id))
+            
+            except ValueError as err:
+                flash(str(err), 'error')
+                return redirect(url_for('patient_info', patient_id=patient_id))
+                
+                

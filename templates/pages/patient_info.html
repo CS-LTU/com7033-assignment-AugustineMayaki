@@ -51,12 +51,13 @@
             title='Patient Infomation',
             button=add_button
             ) %}
-            <span class="text-sm text-gray-600">ID: {{ patient.id }}</span>
-            <div class="flex flex-col flex-1 overflow-y-auto hidden-scrollbar">
-                <form action="">
+            <span class="text-sm text-gray-600">Patient ID: {{ patient.id }}</span>
+            <form method="post"
+                  action="{{ url_for('update_patient_route', patient_id=patient.id) }}">
+                <div class="flex flex-col flex-1 overflow-y-auto hidden-scrollbar">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {{ Input(label='First Name', placeholder='Enter your first name', input_class='full_rounded_input', value=patient.first_name, required=True) }}
-                        {{ Input(label='Last Name', placeholder='Enter your last name', input_class='full_rounded_input', value=patient.last_name, required=True) }}
+                        {{ Input(label='First Name', placeholder='Enter your first name', name='first_name',input_class='full_rounded_input', value=patient.first_name, required=True) }}
+                        {{ Input(label='Last Name', name='last_name', placeholder='Enter your last name', input_class='full_rounded_input', value=patient.last_name, required=True) }}
                         {{ Input(label='Email address', placeholder='Enter your email address', input_class='full_rounded_input', value=patient.email, disabled=True, required=True) }}
                         {{ Dropdown(id='gender',
                                                 name='gender',
@@ -66,13 +67,13 @@
                                                 class_name='flex-1', value=patient.gender, required=True) }}
                         {{ Input(label='Date of Birth', placeholder='Enter DOB', input_type='date', input_class='full_rounded_input', name='date_of_birth', id='date_of_birth', container_class='flex-1', value=patient.date_of_birth, required=True) }}
                     </div>
-                </form>
-            </div>
-            <div class="flex gap-4  justify-end ">
-                {% call Button(class_name='mt-5 max-w-[200px] w-full', button_class='default_button') %}
-                    <span>Update</span>
-                {% endcall %}
-            </div>
+                </div>
+                <div class="flex gap-4  justify-end ">
+                    {% call Button(type='submit', class_name='mt-5 max-w-[200px] w-full', button_class='default_button') %}
+                        Update
+                    {% endcall %}
+                </div>
+            </form>
         {% endcall %}
         {% call Card(
             container_class='flex flex-col max-h-[calc(100vh-100px)]',

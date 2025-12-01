@@ -60,20 +60,44 @@
                                 <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.gender }}</td>
                                 <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.created_at }}</td>
                                 <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2 flex justify-between items-center">
-                                    <form method="get"
-                                          action="{{ url_for('patient_info', patient_id=p.id) }}"
-                                          class="inline">
-                                        <button type="submit"
-                                                class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:!bg-green-200 cursor-pointer">
-                                            View
-                                        </button>
-                                    </form>
-                                    <form method="post" action="#" class="inline">
-                                        <button type="submit"
-                                                class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
-                                            Delete
-                                        </button>
-                                    </form>
+                                    {% if current_user %}
+                                        {% if current_user.is_doctor() %}
+                                            <form method="get"
+                                                  action="{{ url_for('patient_info', patient_id=p.id) }}"
+                                                  class="inline">
+                                                <button type="submit"
+                                                        class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer">
+                                                    View
+                                                </button>
+                                            </form>
+                                            <form method="get"
+                                                  action="{{ url_for('patient_info', patient_id=p.id) }}"
+                                                  class="inline">
+                                                <button type="submit"
+                                                        class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
+                                                    Edit
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if current_user.is_nurse() %}
+                                            <form method="get"
+                                                  action="{{ url_for('patient_info', patient_id=p.id) }}"
+                                                  class="inline">
+                                                <button type="submit"
+                                                        class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer">
+                                                    View
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if current_user.is_super_admin() %}
+                                            <form action="#" class="inline">
+                                                <button type="button"
+                                                        class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% else %}
