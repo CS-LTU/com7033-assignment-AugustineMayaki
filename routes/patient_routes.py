@@ -42,7 +42,6 @@ def init_patient_routes(app):
         # GET request - show registration form
         return render_template('pages/patient_management.html', patients_overview=get_patients_statistics(), patients=get_all_patients())
             
-            
     @app.route("/patient-management/patient/<int:patient_id>")
     @auth_required
     @doctor_required
@@ -74,5 +73,15 @@ def init_patient_routes(app):
             except ValueError as err:
                 flash(str(err), 'error')
                 return redirect(url_for('patient_info', patient_id=patient_id))
-                
-                
+    
+    
+    @app.route("/patient-management/patient/<int:patient_id>/delete", methods=['POST'])
+    @auth_required
+    @admin_required
+    def delete_patient_route(patient_id):
+        try:
+            delete_patient(patient_id)
+            flash('Patient deleted successfully!', 'success')
+        except Exception as e:
+            flash('Failed to delete patient.', 'error')
+        return redirect(url_for('patient_management'))

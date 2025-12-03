@@ -22,7 +22,8 @@
     ] %}
     <h1 class="text-primary-black300 font-medium text-lg 640:text-xl pl-2">Welcome!</h1>
     {{ overview_cards(overview_data=patients_overview) }}
-    <div x-data="{ registerModal :  false }" class="max-w-7xl mx-auto mt-6">
+    <div x-data="{ registerModal: false, deletePatientModal: false, selectedPatientId: null }"
+         class="max-w-7xl mx-auto mt-6">
         {% if current_user and current_user.is_super_admin() %}
             {% set add_button %}
                 <div @click="registerModal=true">
@@ -90,12 +91,11 @@
                                             </form>
                                         {% endif %}
                                         {% if current_user.is_super_admin() %}
-                                            <form action="#" class="inline">
-                                                <button type="button"
-                                                        class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
-                                                    Delete
-                                                </button>
-                                            </form>
+                                            <button @click="selectedPatientId = {{ p.id }}; deletePatientModal = true"
+                                                    type="button"
+                                                    class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
+                                                Delete
+                                            </button>
                                         {% endif %}
                                     {% endif %}
                                 </td>
@@ -138,6 +138,29 @@
                     {% endcall %}
                     {% call Button(type='submit', button_class='default_button', on_click='') %}
                         Register
+                    {% endcall %}
+                </div>
+            </form>
+        {% endcall %}
+        {% call Modal(
+            id='deletePatientModal',
+            class_name='max-w-lg',
+            is_open='deletePatientModal') %}
+            <h2 class="text-xl font-semibold text-primary-black mb-4">Delete Patient</h2>
+            <form method="post"
+                  :action="`{{ url_for('delete_patient_route', patient_id=0) }}`.replace('0', selectedPatientId)">
+                <p class="text-center text-lg">
+                    Are you sure you want to delete patient with ID: <span x-text="selectedPatientId" class="font-medium"></span>?
+                </p>
+                <p class="text-base text-center font-semibold mt-6 mb-5">
+                    Please note: <span class="text-red-600 font-normal">this action is irreversible.</span>
+                </p>
+                <div class="flex gap-4 justify-end mt-4">
+                    {% call Button(type='button', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50', on_click='deletePatientModal = false') %}
+                        Cancel
+                    {% endcall %}
+                    {% call Button(type='submit', button_class='default_button !bg-red-600 hover:!bg-red-700', on_click='') %}
+                        Delete
                     {% endcall %}
                 </div>
             </form>
