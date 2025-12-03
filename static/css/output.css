@@ -1013,6 +1013,26 @@ body {
   height: 100vh;
 }
 
+.h-\[225px\] {
+  height: 225px;
+}
+
+.h-\[255px\] {
+  height: 255px;
+}
+
+.h-\[200px\] {
+  height: 200px;
+}
+
+.h-\[240px\] {
+  height: 240px;
+}
+
+.h-\[250px\] {
+  height: 250px;
+}
+
 .max-h-\[calc\(100vh-100px\)\] {
   max-height: calc(100vh - 100px);
 }
@@ -1023,6 +1043,10 @@ body {
 
 .min-h-dvh {
   min-height: 100dvh;
+}
+
+.min-h-\[200px\] {
+  min-height: 200px;
 }
 
 .w-\[134px\] {
@@ -1583,6 +1607,10 @@ body {
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
+.text-primary {
+  color: hsl(var(--primary));
+}
+
 .opacity-50 {
   opacity: 0.5;
 }
@@ -1782,6 +1810,10 @@ h1 {
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
+.hover\:underline:hover {
+  text-decoration-line: underline;
+}
+
 @media (min-width: 560px) {
   .\35 60\:text-2xl {
     font-size: 1.5rem;
@@ -1814,6 +1846,10 @@ h1 {
 }
 
 @media (min-width: 768px) {
+  .md\:h-full {
+    height: 100%;
+  }
+
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
