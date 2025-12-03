@@ -43,9 +43,17 @@ def get_current_user():
     cursor = conn.cursor()
     
     cursor.execute('''
-    SELECT id, employee_id, email, is_active
-    FROM users
-    WHERE id = ?
+        SELECT 
+            u.id,
+            u.employee_id,
+            u.email,
+            e.first_name,
+            e.last_name,
+            u.password_hash,
+            u.is_active
+        FROM users u
+        JOIN employee e ON u.employee_id = e.employee_id
+        WHERE u.id = ?
     ''', (user_id,))
     row = cursor.fetchone()
     conn.close()

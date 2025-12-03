@@ -37,3 +37,39 @@ def admin_required(f):
             
         return f(*args, **kwargs)
     return decorated_function
+
+def doctor_required(f):
+    """
+    A decorator to ensure that the current user is a doctor.
+    Clears session and redirect the user to login page if not authenticated or not a doctor.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        current_user = get_current_user()
+        
+        # Check if user exists and is doctor
+        if not current_user or not current_user.is_doctor():
+            session.clear()
+            flash("Access denied. Doctor privileges required.", "error")
+            return redirect(url_for('login'))
+            
+        return f(*args, **kwargs)
+    return decorated_function
+
+def admin_or_doctor_required(f):
+    """
+    A decorator to ensures that the current user is either a super admin or a doctor.
+    Clears session and redirect the user to login page if not authenticated or neither a super admin nor a doctor.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        current_user = get_current_user()
+        
+        # Check if user exists and is either super admin or doctor
+        if not current_user or not (current_user.is_super_admin() or current_user.is_doctor()):
+            session.clear()
+            flash("Access denied. Super admin or Doctor privileges required.", "error")
+            return redirect(url_for('login'))
+            
+        return f(*args, **kwargs)
+    return decorated_function

@@ -1,7 +1,7 @@
 
 from flask import flash, render_template, request, redirect, session, url_for 
 from utils.auth import (
-    handle_login, redirect_user_by_role, validate_registration_data,
+    handle_login, validate_registration_data,
     validate_credentials, create_user, clear_form_data
 )
 
@@ -15,7 +15,7 @@ def init_auth_routes(app):
             
             if handle_login(email, password):
                 flash("Login successfully", "success")
-                return redirect(redirect_user_by_role())
+                return redirect(url_for('patient_management'))
             else:
                 return render_template('pages/auth/login.html', email=email)
         

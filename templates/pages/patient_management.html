@@ -20,16 +20,20 @@
             "value": "other"
         }
     ] %}
-    <h1 class="text-primary-black300 font-medium text-lg 640:text-xl pl-2">Welcome!</h1>
     {{ overview_cards(overview_data=patients_overview) }}
-    <div x-data="{ registerModal :  false }" class="max-w-7xl mx-auto mt-6">
-        {% set add_button %}
-            <div @click="registerModal=true">
-                {% call Button(button_class='default_button !px-3 !text-sm') %}
-                    Add New
-                {% endcall %}
-            </div>
-        {% endset %}
+    <div x-data="{ registerModal: false, deletePatientModal: false, selectedPatientId: null }"
+         class="max-w-7xl mx-auto mt-6">
+        {% if current_user and current_user.is_super_admin() %}
+            {% set add_button %}
+                <div @click="registerModal=true">
+                    {% call Button(button_class='default_button !px-3 !text-sm') %}
+                        Add New
+                    {% endcall %}
+                </div>
+            {% endset %}
+        {% else %}
+            {% set add_button = "" %}
+        {% endif %}
         {% call Card(
             container_class='flex flex-col max-h-[calc(100vh-56px)]',
             title='Patients',
@@ -44,22 +48,55 @@
                             <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Email</th>
                             <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Gender</th>
                             <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Created</th>
-                            <th class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Action</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 bg-white">
                         {% for p in patients %}
                             <tr class="hover:bg-slate-50">
                                 <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.id }}</td>
-                                <td class="px-4 sm:px-6 py-3 text-sm font-medium text-slate-800">{{ p.name }}</td>
+                                <td class="px-4 sm:px-6 py-3 text-sm font-medium text-slate-800">{{ p.first_name }} {{ p.last_name }}</td>
                                 <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.email }}</td>
-                                <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.gender }}</td>
-                                <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.created }}</td>
-                                <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2">
-                                    <a href="#"
-                                       class="inline-flex items-center gap-1 text-primary hover:underline">View</a>
-                                    <a href="#"
-                                       class="inline-flex items-center gap-1 text-red-600 hover:underline">Delete</a>
+                                <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.gender | capitalize }}</td>
+                                <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.created_at | format_date }}</td>
+                                <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2 flex justify-between items-center">
+                                    {% if current_user %}
+                                        {% if current_user.is_doctor() %}
+                                            <form method="get"
+                                                  action="{{ url_for('patient_info', patient_id=p.id) }}"
+                                                  class="inline">
+                                                <button type="submit"
+                                                        class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer">
+                                                    View
+                                                </button>
+                                            </form>
+                                            <form method="get"
+                                                  action="{{ url_for('patient_info', patient_id=p.id) }}"
+                                                  class="inline">
+                                                <button type="submit"
+                                                        class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
+                                                    Edit
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if current_user.is_nurse() %}
+                                            <form method="get"
+                                                  action="{{ url_for('patient_info', patient_id=p.id) }}"
+                                                  class="inline">
+                                                <button type="submit"
+                                                        class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer">
+                                                    View
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if current_user.is_super_admin() %}
+                                            <button @click="selectedPatientId = {{ p.id }}; deletePatientModal = true"
+                                                    type="button"
+                                                    class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
+                                                Delete
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% else %}
@@ -77,28 +114,52 @@
             is_open='registerModal'
             ) %}
             <h2 class="text-xl font-semibold text-primary-black mb-4">Register a Patient</h2>
-            <form>
+            <form method="post" action="{{ url_for("register_patient_route") }}">
                 <div class="space-y-4">
                     <div class="flex justify-between items-center gap-4">
-                        {{ Input(label='First Name', placeholder='Enter first name', input_class='full_rounded_input', name='first_name', id='first_name') }}
-                        {{ Input(label='Last Name', placeholder='Enter last name', input_class='full_rounded_input', name='last_name', id='last_name') }}
+                        {{ Input(label='First Name', placeholder='Enter first name', input_class='full_rounded_input', name='first_name', id='first_name', required=True) }}
+                        {{ Input(label='Last Name', placeholder='Enter last name', input_class='full_rounded_input', name='last_name', id='last_name', required=True) }}
                     </div>
                     <div class="flex justify-between items-center gap-4">
-                        {{ Input(label='Age', placeholder='Enter age', input_type='number', input_class='full_rounded_input', name='age', id='age', container_class='flex-1') }}
+                        {{ Input(label='Date of Birth', placeholder='Enter DOB', input_type='date', input_class='full_rounded_input', name='date_of_birth', id='date_of_birth', container_class='flex-1', required=True) }}
                         {{ Dropdown(id='gender',
                                                 name='gender',
                                                 label='Gender',
                                                 options=options,
                                                 placeholder='Select Gender',
-                                                class_name='flex-1') }}
+                                                class_name='flex-1', required=True) }}
                     </div>
+                    {{ Input(label='Email Address', placeholder='Enter email address', input_type='email', input_class='full_rounded_input', name='email', id='email', container_class='flex-1',  required=True) }}
                 </div>
                 <div class="flex gap-4 justify-end mt-6">
                     {% call Button(type='button', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50', on_click='registerModal = false') %}
                         Cancel
                     {% endcall %}
-                    {% call Button(type='button', button_class='default_button', on_click='') %}
+                    {% call Button(type='submit', button_class='default_button', on_click='') %}
                         Register
+                    {% endcall %}
+                </div>
+            </form>
+        {% endcall %}
+        {% call Modal(
+            id='deletePatientModal',
+            class_name='max-w-lg',
+            is_open='deletePatientModal') %}
+            <h2 class="text-xl font-semibold text-primary-black mb-4">Delete Patient</h2>
+            <form method="post"
+                  :action="`{{ url_for('delete_patient_route', patient_id=0) }}`.replace('0', selectedPatientId)">
+                <p class="text-center text-lg">
+                    Are you sure you want to delete patient with ID: <span x-text="selectedPatientId" class="font-medium"></span>?
+                </p>
+                <p class="text-base text-center font-semibold mt-6 mb-5">
+                    Please note: <span class="text-red-600 font-normal">this action is irreversible.</span>
+                </p>
+                <div class="flex gap-4 justify-end mt-4">
+                    {% call Button(type='button', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50', on_click='deletePatientModal = false') %}
+                        Cancel
+                    {% endcall %}
+                    {% call Button(type='submit', button_class='default_button !bg-red-600 hover:!bg-red-700', on_click='') %}
+                        Delete
                     {% endcall %}
                 </div>
             </form>

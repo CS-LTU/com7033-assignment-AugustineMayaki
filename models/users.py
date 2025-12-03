@@ -30,12 +30,14 @@ class User:
     """
     A class to represent the user and perform user-related operations.
     """
-    def __init__(self, id, employee_id, email, password_hash=None, is_active=True):
+    def __init__(self, id, employee_id, email, first_name, last_name, password_hash=None, is_active=True):
         self.id = id
         self.employee_id = employee_id
         self.email = email
         self.password_hash = password_hash
         self.is_active = bool(is_active)
+        self.first_name = first_name
+        self.last_name = last_name
         self._role = None  # Cache for role from Employee table
         
    
