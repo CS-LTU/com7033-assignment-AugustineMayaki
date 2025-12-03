@@ -20,7 +20,6 @@
             "value": "other"
         }
     ] %}
-    <h1 class="text-primary-black300 font-medium text-lg 640:text-xl pl-2">Welcome!</h1>
     {{ overview_cards(overview_data=patients_overview) }}
     <div x-data="{ registerModal: false, deletePatientModal: false, selectedPatientId: null }"
          class="max-w-7xl mx-auto mt-6">
@@ -58,8 +57,8 @@
                                 <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.id }}</td>
                                 <td class="px-4 sm:px-6 py-3 text-sm font-medium text-slate-800">{{ p.first_name }} {{ p.last_name }}</td>
                                 <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.email }}</td>
-                                <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.gender }}</td>
-                                <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.created_at }}</td>
+                                <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.gender | capitalize }}</td>
+                                <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ p.created_at | format_date }}</td>
                                 <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2 flex justify-between items-center">
                                     {% if current_user %}
                                         {% if current_user.is_doctor() %}

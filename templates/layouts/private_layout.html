@@ -2,12 +2,24 @@
 {% from "components/sidebar.html" import render as sidebar %}
 {% block content %}
     {% set navigation_pages = [
-            {'name': 'Patient Management', 'url': url_for('patient_management'), 'icon': 'fas fa-user-injured'},
-            {'name': 'Users Management', 'url': url_for('users_management'), 'icon': 'fas fa-users'},
+            {'name': 'Patient Management', 'url': url_for('patient_management'), 'icon': 'fas fa-user-injured'}
         ] %}
+    {% if current_user and current_user.is_super_admin() %}
+        {% set navigation_pages = navigation_pages + [
+                    {'name': 'Users Management', 'url': url_for('users_management'), 'icon': 'fas fa-users'}
+                ] %}
+    {% endif %}
     <div class="flex w-full h-screen overflow-hidden">
         {{ sidebar(pages=navigation_pages, current_path=request.path) }}
         <main class="relative flex-1 overflow-y-auto bg-slate-100 h-lvh p-5 pt-7 pb-5 hidden-scrollbar {{ extra_class }}">
+            <h1 class="text-primary-black300 font-medium text-lg 640:text-xl pl-2">
+                Welcome,
+                {% if current_user.is_super_admin() %}
+                    Admin {{ current_user.first_name }}!
+                {% else %}
+                    {{ current_user.get_role() |capitalize }} {{ current_user.first_name }}!
+                {% endif %}
+            </h1>
             {% block main_content %}{% endblock %}
         </main>
     </div>

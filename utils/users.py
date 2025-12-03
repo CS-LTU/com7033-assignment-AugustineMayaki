@@ -95,9 +95,10 @@ def find_user_by_email(email):
     cursor = conn.cursor()
 
     cursor.execute('''
-    SELECT id, employee_id, email, password_hash, is_active
-    FROM users
-    WHERE email = ?
+    SELECT u.id, u.employee_id, u.email, e.first_name, e.last_name, u.password_hash, u.is_active
+    FROM users u
+    JOIN employee e ON u.employee_id = e.employee_id
+    WHERE u.email = ?
     ''', (email,))
     row = cursor.fetchone() 
     conn.close()

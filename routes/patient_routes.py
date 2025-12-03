@@ -10,11 +10,9 @@ def init_patient_routes(app):
     @auth_required
     @admin_or_doctor_required
     def patient_management():
-        current_user = get_current_user()
         return render_template('pages/patient_management.html', 
                              patients_overview=get_patients_statistics(), 
-                             patients=get_all_patients(),
-                             current_user=current_user)
+                             patients=get_all_patients())
     
     
     @app.route("/register-patient", methods=['GET', 'POST'])
