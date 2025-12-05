@@ -50,7 +50,7 @@ def get_all_patients():
     return patients
 
     
-def get_patients_statistics(assessments=None):
+def get_patients_statistics(assessments):
     """
     Get statistics about patients_demographics in the system.
     """
@@ -62,9 +62,7 @@ def get_patients_statistics(assessments=None):
 
     conn.close()
     
-    assessment_count = 0
-    if assessments is not None:
-        assessment_count = assessments.count_documents({})
+    assessment_count =assessments.count_documents({})
     
     return  [
     {
@@ -166,36 +164,20 @@ def update_patient(id, first_name, last_name, date_of_birth, gender):
     except sqlite3.IntegrityError:
         raise ValueError('Failed to update patient information.')
 
-def delete_patient(id, assessment_collection=None):
+def delete_patient(id):
     """
-    Delete a patient from the database and their assessment history from MongoDB.
+    Delete a patient from the database.
     """
+    conn = sqlite3.connect(db_name())
+    cursor = conn.cursor()
     
-        
- # Delete patient MongoDB assessments first
-    if assessment_collection is not None:
-        try:
-            # Delete all assessments for this patient
-            assessment_collection.delete_many({"patient_id": id})
-
-        except Exception as e:
-            raise ValueError(f"Failed to delete patient assessments: {e}")
+    cursor.execute('''
+    DELETE FROM patients_demographics
+    WHERE id = ?
+    ''', (id,))
     
-    # Then delete from SQLite
-    try:
-        conn = sqlite3.connect(db_name())
-        cursor = conn.cursor()
-        
-        cursor.execute('''
-        DELETE FROM patients_demographics
-        WHERE id = ?
-        ''', (id,))
-        
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        raise ValueError(f"Failed to delete patient: {e}")
-    
+    conn.commit()
+    conn.close()
     return True
 
 def validate_patient_assessment_data( work_type,
@@ -264,7 +246,5 @@ def get_patient_assessments_history(assessment, patient_id):
     """
     Fetch all assessments for a given patient from the database.
     """
-    if assessment is not None:
-        assessments = assessment.find({"patient_id": patient_id}).sort("date", -1)
-        return list(assessments)
-    return []
+    assessments = assessment.find({"patient_id": patient_id}).sort("date", -1)
+    return list(assessments)

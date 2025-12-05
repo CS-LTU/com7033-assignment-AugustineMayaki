@@ -6,17 +6,16 @@ from routes.user_routes import init_user_routes
 from routes.patient_routes import init_patient_routes
 from utils.auth import get_current_user
 from datetime import datetime
-from seed_db import init_database, get_mongo_connection
+from pymongo import MongoClient
 
 load_dotenv()
 
 app = Flask(__name__)
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
-
-init_database()
-
-db, patient_assessments_collection = get_mongo_connection()
+client = MongoClient(os.environ.get("MONGODB_URI"))
+db = client[os.environ.get("MONGODB_NAME")]
+patient_assessments_collection = db[os.environ.get("MONGODB_PATIENT_ASSESSMENTS_COLLECTION")]
  
  
 @app.context_processor
@@ -45,6 +44,8 @@ init_user_routes(app)
 init_patient_routes(app, db, patient_assessments_collection)
 
 
+    
+
 
 if __name__=='__main__':
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True)
