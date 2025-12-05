@@ -24,3 +24,5 @@ neuroPredict
 
 delete_db.py
 delete_database.py
+
+clear_mongo.py
