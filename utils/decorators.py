@@ -73,3 +73,39 @@ def admin_or_doctor_required(f):
             
         return f(*args, **kwargs)
     return decorated_function
+
+def doctor_or_nurse_required(f):
+    """
+    A decorator to ensures that the current user is either a doctor or a nurse.
+    Clears session and redirect the user to login page if not authorized.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        current_user = get_current_user()
+        
+        # Check if user exists and is either a doctor or nurse
+        if not current_user or not (current_user.is_doctor() or current_user.is_nurse()):
+            session.clear()
+            flash("Access denied. Doctor or Nurse privileges required.", "error")
+            return redirect(url_for('login'))
+            
+        return f(*args, **kwargs)
+    return decorated_function
+
+def health_professionals_required(f):
+    """
+    A decorator to ensures that the current user is either a required health care professional.
+    Clears session and redirect the user to login page if not authorized.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        current_user = get_current_user()
+        
+        # Check if user exists and is a health care professional (admin, doctor, nurse)
+        if not current_user or not (current_user.is_super_admin() or current_user.is_doctor() or current_user.is_nurse()):
+            session.clear()
+            flash("Access denied. Health professionals privileges required.", "error")
+            return redirect(url_for('login'))
+            
+        return f(*args, **kwargs)
+    return decorated_function

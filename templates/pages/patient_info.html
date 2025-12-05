@@ -23,11 +23,11 @@
     {% set smoking_status_options = [
         {
             "label": "Formerly smoked",
-            "value": "formerly_smoked"
+            "value": "formerly smoked"
         },
         {
             "label": "Never smoked",
-            "value": "never_smoked"
+            "value": "never smoked"
         },
         {
             "label": "Smokes",
@@ -45,7 +45,7 @@
         },
         {
             "label": "Self Employed",
-            "value": "self_employed"
+            "value": "self employed"
         },
         {
             "label": "Children",
@@ -53,11 +53,11 @@
         },
         {
             "label": "Govt job",
-            "value": "govt_job"
+            "value": "govt job"
         },
         {
             "label": "Never worked",
-            "value": "never_worked"
+            "value": "never worked"
         }
     ] %}
     <div class="max-w-7xl mx-auto flex flex-col gap-6">
@@ -69,7 +69,7 @@
             </form>
         {% endset %}
         {% call Card(
-            container_class='flex flex-col max-h-[calc(100vh-100px)]',
+            container_class='flex flex-col mt-3 max-h-[calc(100vh-100px)]',
             title='Patient Infomation',
             button=add_button
             ) %}
@@ -90,63 +90,76 @@
                         {{ Input(label='Date of Birth', placeholder='Enter DOB', input_type='date', input_class='full_rounded_input', name='date_of_birth', id='date_of_birth', container_class='flex-1', value=patient.date_of_birth, required=True) }}
                     </div>
                 </div>
-                <div class="flex gap-4  justify-end ">
-                    {% call Button(type='submit', class_name='mt-5 max-w-[200px] w-full', button_class='default_button') %}
-                        Update
-                    {% endcall %}
-                </div>
-            </form>
-        {% endcall %}
-        {% call Card(
-            container_class='flex flex-col max-h-[calc(100vh-100px)]',
-            title='Assessment',
-            ) %}
-            <form method="post"
-                  action="{{ url_for('run_patient_assessment', patient_id=patient.id) }}">
-                <div class="flex flex-col flex-1 overflow-y-auto hidden-scrollbar h-[255px]">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-                        {{ Dropdown(id='occupationType',
-                                                name='work_type',
-                                                label='Occupation Type',
-                                                options=work_type,
-                                                placeholder='Select',
-                                                class_name='w-full',
-                                                required=True) }}
-                        {{ Dropdown(id='ever_married',
-                                                name='ever_married',
-                                                label='Ever Married',
-                                                options=[{"label": "Yes", "value": "yes"}, {"label": "No", "value": "no"}],
-                                                placeholder='Select',
-                                                class_name='w-full', required=True) }}
-                        {{ Dropdown(id='residenceType',
-                                                name='residence_type',
-                                                label='Residence type',
-                                                options=residenceType_options,
-                                                placeholder='Select',
-                                                class_name='w-full', required=True) }}
-                        {{ Dropdown(id='hypertensiv_status',
-                                                name='hypertensiv_status',
-                                                label='Hypertensiv Status',
-                                                options=hypertensiv_options,
-                                                placeholder='Select',
-                                                class_name='w-full', required=True) }}
-                        {{ Dropdown(id=' smoking_status',
-                                                name='smoking_status',
-                                                label=' Smoking status',
-                                                options=smoking_status_options,
-                                                placeholder='Select',
-                                                class_name='w-full', required=True) }}
-                        {{ Input(name='avg_glucose_level', label='Average Glucose Level', placeholder='Enter average glucose level', input_class='full_rounded_input', required=True) }}
-                        {{ Input(name='bmi', label='BMI', placeholder='Enter  BMI', input_class='full_rounded_input', required=True) }}
+                {% if current_user and not current_user.is_nurse() %}
+                    <div class="flex gap-4  justify-end ">
+                        {% call Button(type='submit', class_name='mt-5 max-w-[200px] w-full', button_class='default_button') %}
+                            Update
+                        {% endcall %}
                     </div>
-                </div>
-                <div class="flex gap-4  justify-end ">
-                    {% call Button(class_name='mt-5 max-w-[200px] w-full', button_class='default_button') %}
-                        <span>Run Assessment</span>
-                    {% endcall %}
-                </div>
+                {% endif %}
             </form>
         {% endcall %}
+        {% if current_user and not current_user.is_nurse() %}
+            {% call Card(
+                container_class='flex flex-col max-h-[calc(100vh-100px)]',
+                title='Assessment',
+                ) %}
+                <form method="post"
+                      action="{{ url_for('run_patient_assessment', patient_id=patient.id) }}">
+                    <div class="flex flex-col flex-1 overflow-y-auto hidden-scrollbar h-[255px]">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                            {{ Dropdown(id='occupationType',
+                                                        name='work_type',
+                                                        label='Occupation Type',
+                                                        options=work_type,
+                                                        placeholder='Select',
+                                                        class_name='w-full',
+                                                        value=form_data.work_type if form_data else '',
+                                                        required=True) }}
+                            {{ Dropdown(id='ever_married',
+                                                        name='ever_married',
+                                                        label='Ever Married',
+                                                        options=[{"label": "Yes", "value": "yes"}, {"label": "No", "value": "no"}],
+                                                        placeholder='Select',
+                                                        class_name='w-full',
+                                                        value=form_data.ever_married if form_data else '',
+                                                        required=True) }}
+                            {{ Dropdown(id='residenceType',
+                                                        name='residence_type',
+                                                        label='Residence type',
+                                                        options=residenceType_options,
+                                                        placeholder='Select',
+                                                        class_name='w-full',
+                                                        value=form_data.residence_type if form_data else '',
+                                                        required=True) }}
+                            {{ Dropdown(id='hypertensiv_status',
+                                                        name='hypertensiv_status',
+                                                        label='Hypertensiv Status',
+                                                        options=hypertensiv_options,
+                                                        placeholder='Select',
+                                                        class_name='w-full',
+                                                        value=form_data.hypertensiv_status if form_data else '',
+                                                        required=True) }}
+                            {{ Dropdown(id='smoking_status',
+                                                        name='smoking_status',
+                                                        label='Smoking status',
+                                                        options=smoking_status_options,
+                                                        placeholder='Select',
+                                                        class_name='w-full',
+                                                        value=form_data.smoking_status if form_data else '',
+                                                        required=True) }}
+                            {{ Input(name='avg_glucose_level', label='Average Glucose Level', placeholder='Enter average glucose level', input_class='full_rounded_input', value=form_data.avg_glucose_level if form_data else '', required=True) }}
+                            {{ Input(name='bmi', label='BMI', placeholder='Enter  BMI', input_class='full_rounded_input', value=form_data.bmi if form_data else '', required=True) }}
+                        </div>
+                    </div>
+                    <div class="flex gap-4  justify-end ">
+                        {% call Button(class_name='mt-5 max-w-[200px] w-full', button_class='default_button') %}
+                            <span>Run Assessment</span>
+                        {% endcall %}
+                    </div>
+                </form>
+            {% endcall %}
+        {% endif %}
         {% call Card(
             container_class='flex flex-col max-h-[calc(100vh-56px)]',
             title='Assessment History',
@@ -156,14 +169,14 @@
                     <thead class="bg-slate-50 sticky top-0 z-10">
                         <tr>
                             <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Assessment ID</th>
-                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                                Hypertensiv Status
-                            </th>
-                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Glucose level</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Work Type</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Ever Married</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Residence Type</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Hypertension</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Glucose Level</th>
                             <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">BMI</th>
-                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Smoking status</th>
-                            <th class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Stroke status</th>
-                            <th class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Prediction</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Smoking Status</th>
+                            <th class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Stroke Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 bg-white">
@@ -171,6 +184,9 @@
                             {% for a in assessments %}
                                 <tr class="hover:bg-slate-50">
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ a._id }}</td>
+                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ a.work_type | capitalize }}</td>
+                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ a.ever_married | capitalize }}</td>
+                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ a.residence_type | capitalize }}</td>
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">
                                         {% if a.hypertensiv_status == 1 %}
                                             Yes
@@ -182,16 +198,13 @@
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ a.bmi }}</td>
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ a.smoking_status | capitalize }}</td>
                                     <td class="px-4 sm:px-6 py-3 text-sm text-right">
-                                        <span class="inline-flex items-center gap-1 {{ 'text-red-600' if a.stroke_status == 'positive' else 'text-green-600' }}">
-                                            {{ a.stroke_status|capitalize }}
-                                        </span>
+                                        <span class="inline-flex items-center gap-1 text-gray-600">N/A</span>
                                     </td>
-                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">10%</td>
                                 </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="6" class="px-4 sm:px-6 py-6 text-center text-slate-500">No assessments yet.</td>
+                                <td colspan="9" class="px-4 sm:px-6 py-6 text-center text-slate-500">No assessments yet.</td>
                             </tr>
                         {% endif %}
                     </tbody>

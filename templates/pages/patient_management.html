@@ -66,16 +66,8 @@
                                                   action="{{ url_for('patient_info', patient_id=p.id) }}"
                                                   class="inline">
                                                 <button type="submit"
-                                                        class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer">
-                                                    View
-                                                </button>
-                                            </form>
-                                            <form method="get"
-                                                  action="{{ url_for('patient_info', patient_id=p.id) }}"
-                                                  class="inline">
-                                                <button type="submit"
                                                         class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
-                                                    Edit
+                                                    Manage
                                                 </button>
                                             </form>
                                         {% endif %}

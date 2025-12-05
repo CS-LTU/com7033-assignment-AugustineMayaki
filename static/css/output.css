@@ -945,6 +945,10 @@ body {
   margin-top: 0.25rem;
 }
 
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
 .mt-3 {
   margin-top: 0.75rem;
 }
@@ -993,12 +997,16 @@ body {
   height: 32px !important;
 }
 
-.\!h-\[45px\] {
-  height: 45px !important;
-}
-
 .\!h-\[50px\] {
   height: 50px !important;
+}
+
+.h-\[250px\] {
+  height: 250px;
+}
+
+.h-\[255px\] {
+  height: 255px;
 }
 
 .h-full {
@@ -1013,26 +1021,6 @@ body {
   height: 100vh;
 }
 
-.h-\[225px\] {
-  height: 225px;
-}
-
-.h-\[255px\] {
-  height: 255px;
-}
-
-.h-\[200px\] {
-  height: 200px;
-}
-
-.h-\[240px\] {
-  height: 240px;
-}
-
-.h-\[250px\] {
-  height: 250px;
-}
-
 .max-h-\[calc\(100vh-100px\)\] {
   max-height: calc(100vh - 100px);
 }
@@ -1045,20 +1033,8 @@ body {
   min-height: 100dvh;
 }
 
-.min-h-\[200px\] {
-  min-height: 200px;
-}
-
-.w-\[134px\] {
-  width: 134px;
-}
-
 .w-\[140px\] {
   width: 140px;
-}
-
-.w-\[45px\] {
-  width: 45px;
 }
 
 .w-\[70px\] {
@@ -1071,14 +1047,6 @@ body {
 
 .w-full {
   width: 100%;
-}
-
-.w-\[130px\] {
-  width: 130px;
-}
-
-.w-\[100px\] {
-  width: 100px;
 }
 
 .min-w-0 {
@@ -1095,6 +1063,10 @@ body {
 
 .max-w-7xl {
   max-width: 80rem;
+}
+
+.max-w-\[140px\] {
+  max-width: 140px;
 }
 
 .max-w-\[150px\] {
@@ -1115,10 +1087,6 @@ body {
 
 .max-w-xl {
   max-width: 36rem;
-}
-
-.max-w-\[140px\] {
-  max-width: 140px;
 }
 
 .flex-1 {
@@ -1422,24 +1390,12 @@ body {
   padding-top: 2.5rem;
 }
 
-.pt-14 {
-  padding-top: 3.5rem;
+.pt-4 {
+  padding-top: 1rem;
 }
 
 .pt-7 {
   padding-top: 1.75rem;
-}
-
-.pt-2 {
-  padding-top: 0.5rem;
-}
-
-.pt-8 {
-  padding-top: 2rem;
-}
-
-.pt-4 {
-  padding-top: 1rem;
 }
 
 .text-left {
@@ -1605,10 +1561,6 @@ body {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-
-.text-primary {
-  color: hsl(var(--primary));
 }
 
 .opacity-50 {
@@ -1810,10 +1762,6 @@ h1 {
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
-.hover\:underline:hover {
-  text-decoration-line: underline;
-}
-
 @media (min-width: 560px) {
   .\35 60\:text-2xl {
     font-size: 1.5rem;
@@ -1856,10 +1804,6 @@ h1 {
 }
 
 @media (min-width: 880px) {
-  .\38 80\:w-\[80px\] {
-    width: 80px;
-  }
-
   .\38 80\:gap-4 {
     gap: 1rem;
   }
@@ -1881,10 +1825,6 @@ h1 {
 
   .\31 180\:inline {
     display: inline;
-  }
-
-  .\31 180\:w-\[120px\] {
-    width: 120px;
   }
 
   .\31 180\:w-\[256px\] {
@@ -1919,10 +1859,6 @@ h1 {
 }
 
 @media (min-width: 1400px) {
-  .\31 400\:w-\[134px\] {
-    width: 134px;
-  }
-
   .\31 400\:w-\[367px\] {
     width: 367px;
   }
