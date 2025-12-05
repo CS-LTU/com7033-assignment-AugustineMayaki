@@ -3,13 +3,35 @@ import os
 from models.users import init_users
 from models.roles import init_roles
 from models.patients import init_patients_demographics
-from models.employee import init_employee, Employee
+from models.employee import init_employee
 import sqlite3
 from utils.init_db import db_name
+from pymongo import MongoClient
+from dotenv import load_dotenv
 
-def delete_and_create_database():
+
+load_dotenv()
+
+def get_mongo_connection():
     """
-    Drop and recreate the database tables.
+    Get MongoDB connection
+    Returns db and collection if successful, else None.
+    """
+    try:
+        client = MongoClient(os.environ.get("MONGODB_URI"))
+        db = client[os.environ.get("MONGODB_NAME")]
+        patient_assessments_collection = db[os.environ.get("MONGODB_PATIENT_ASSESSMENTS_COLLECTION")]
+        
+        print("Connected to MongoDB")
+        return db, patient_assessments_collection
+    
+    except Exception as e:
+        print(f"MongoDB connection failed: {e}")
+        return None, None
+
+def delete_database():
+    """
+    Drop the database tables.
     """
     # Create instance directory if it doesn't exist
     os.makedirs('instance', exist_ok=True)
@@ -26,24 +48,20 @@ def delete_and_create_database():
 
     conn.commit()
     conn.close()  
-    
-    # Recreate tables individually
+
+
+def init_database():
     init_roles()
     init_employee()
     init_users()
     init_patients_demographics()
-
-def seed_database():
-    print("Deleting and recreating database...")
-    delete_and_create_database()
-    print("Tables created.")
     
     print("Seeding database with initial data...")
     # Open database connection
     conn = sqlite3.connect(db_name())
     cursor = conn.cursor()
     
-    print("Creating employees from CSV...")
+    print("Creating employees from CSV.....")
     csv_file = 'employees.csv'
         
     if os.path.exists(csv_file):
@@ -75,7 +93,7 @@ def seed_database():
     
     conn.commit()
     conn.close()
-    print("Database seeding completed successfully!")
+    print("Database initialized successfully!")
 
 def create_new_table_only():
     """
@@ -100,6 +118,6 @@ def create_new_table_only():
     print("patients_demographics table created successfully!")
 
 if __name__ == '__main__':
-    create_new_table_only()
+    # create_new_table_only()
       
-    # seed_database()
+    init_database()

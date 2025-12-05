@@ -50,7 +50,7 @@ def get_all_patients():
     return patients
 
     
-def get_patients_statistics():
+def get_patients_statistics(assessments=None):
     """
     Get statistics about patients_demographics in the system.
     """
@@ -61,6 +61,11 @@ def get_patients_statistics():
     total_patients = cursor.fetchone()[0]
 
     conn.close()
+    
+    assessment_count = 0
+    if assessments is not None:
+        assessment_count = assessments.count_documents({})
+    
     return  [
     {
         "label": "Total Patients",
@@ -68,9 +73,9 @@ def get_patients_statistics():
         "description": "Registered patients in the system"
     },
     {
-        "label": "Total Predictions",
-        "value": "3,421",
-        "description": "Stroke predictions made"
+        "label": "Total assessments",
+        "value": format(assessment_count),
+        "description": "Stroke assessment made"
     }
 ]
 
@@ -161,19 +166,102 @@ def update_patient(id, first_name, last_name, date_of_birth, gender):
     except sqlite3.IntegrityError:
         raise ValueError('Failed to update patient information.')
 
-def delete_patient(id):
+def delete_patient(id, assessment_collection=None):
     """
-    Delete a patient from the database.
-    """
-    conn = sqlite3.connect(db_name())
-    cursor = conn.cursor()
-    
-    cursor.execute('''
-    DELETE FROM patients_demographics
-    WHERE id = ?
-    ''', (id,))
-    
-    conn.commit()
-    conn.close()
-    return True
+    Delete a patient from the database and their assessment history from MongoDB.
 
+    """
+     # Delete patient MongoDB assessments first
+    if assessment_collection is not None:
+        try:
+            # Delete all assessments for this patient
+            assessment_collection.delete_many({"patient_id": id})
+
+        except Exception as e:
+            raise ValueError(f"Failed to delete patient assessments: {e}")
+    
+    # Then delete from SQLite
+    try:
+        conn = sqlite3.connect(db_name())
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+        DELETE FROM patients_demographics
+        WHERE id = ?
+        ''', (id,))
+        
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        raise ValueError(f"Failed to delete patient: {e}")
+
+def validate_patient_assessment_data( work_type,
+    ever_married,
+    residence_type,
+    avg_glucose_level,
+    hypertensiv_status,
+    bmi,
+    smoking_status,):
+
+    """
+    Validate patient assessment form data.
+    Raise ValueError if there is an error.
+    """
+
+    if not all([work_type, ever_married, residence_type,
+                hypertensiv_status, smoking_status]):
+        raise ValueError("Please fill out all required fields.")
+
+    # allowed values for category fields
+    allowed_work_types = {"private", "self employed", "govt job",
+                          "never worked", "children"}
+    if work_type not in allowed_work_types:
+        raise ValueError("Invalid work type selected.")
+
+    allowed_ever_married = {"yes", "no"}
+    if ever_married not in allowed_ever_married:
+        raise ValueError("Invalid marital status selected.")
+
+    allowed_residence = {"urban", "rural"}
+    if residence_type not in allowed_residence:
+        raise ValueError("Invalid residence type selected.")
+
+    allowed_hypertension = {"0", "1"}
+    if hypertensiv_status not in allowed_hypertension:
+        raise ValueError("Invalid hypertension status selected.")
+
+    allowed_smoking = {"formerly smoked", "never smoked",
+                       "smokes", "unknown"}
+    if smoking_status not in allowed_smoking:
+        raise ValueError("Invalid smoking status selected.")
+
+    try:
+        avg_glucose_level = float(avg_glucose_level)
+        bmi = float(bmi)
+    except ValueError:
+        raise ValueError("Average glucose level and BMI must be valid numbers.")
+
+    if not (40 <= avg_glucose_level <= 400):
+        raise ValueError("Average glucose level should be between 40 and 400 mg/dL.")
+
+    if not (10 <= bmi <= 80):
+        raise ValueError("BMI should be between 10 and 80.")
+
+    return {
+        "work_type": work_type,
+        "ever_married": ever_married,
+        "residence_type": residence_type,
+        "avg_glucose_level": avg_glucose_level,
+        "hypertensiv_status": hypertensiv_status,
+        "bmi": bmi,
+        "smoking_status": smoking_status,
+    }
+
+def get_patient_assessments_history(assessment, patient_id):
+    """
+    Fetch all assessments for a given patient from the database.
+    """
+    if assessment is not None:
+        assessments = assessment.find({"patient_id": patient_id}).sort("date", -1)
+        return list(assessments)
+    return []
