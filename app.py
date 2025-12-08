@@ -16,7 +16,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
 init_database()
 
-db, patient_assessments_collection, patient_emergency_contact_collection = get_mongo_connection()
+db, patient_assessments_collection, emergency_contact_coll = get_mongo_connection()
  
  
 @app.context_processor
@@ -42,7 +42,7 @@ def format_date(date):
 
 init_auth_routes(app)
 init_user_routes(app)
-init_patient_routes(app, db, patient_assessments_collection, patient_emergency_contact_collection)
+init_patient_routes(app, db, patient_assessments_collection, emergency_contact_coll)
 
 
 

@@ -21,10 +21,10 @@ def get_mongo_connection():
         client = MongoClient(os.environ.get("MONGODB_URI"))
         db = client[os.environ.get("MONGODB_NAME")]
         patient_assessments_collection = db[os.environ.get("MONGODB_PATIENT_ASSESSMENTS_COLLECTION")]
-        patient_emergency_contact_collection = db[os.environ.get("MONGODB_PATIENT_EMERGENCY_CONTACT_COLLECTION")]
+        emergency_contact_coll = db[os.environ.get("MONGODB_EMERGENCY_CONTACT_COLL")]
         
         print("Connected to MongoDB")
-        return db, patient_assessments_collection, patient_emergency_contact_collection
+        return db, patient_assessments_collection, emergency_contact_coll
     
     except Exception as e:
         print(f"MongoDB connection failed: {e}")

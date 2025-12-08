@@ -127,15 +127,17 @@
                 {% endif %}
             </form>
         {% endcall %}
-        {% set add_emergency_button %}
-            {% call Button(on_click='addContactModal = true', type='button', class_name='max-w-[150px] w-full', button_class='default_button !px-3 !text-sm') %}
-                Add Contact
-            {% endcall %}
-        {% endset %}
+        {% if current_user and not current_user.is_nurse() %}
+            {% set add_emergency_button %}
+                {% call Button(on_click='addContactModal = true', type='button', class_name='max-w-[150px] w-full', button_class='default_button !px-3 !text-sm') %}
+                    Add Contact
+                {% endcall %}
+            {% endset %}
+        {% endif %}
         {% call Card(
             container_class='flex flex-col max-h-[calc(100vh-100px)]',
             title='Emergency Contacts',
-            button=add_emergency_button
+            button=add_emergency_button if current_user and not current_user.is_nurse() else ''
             ) %}
             <div class="flex flex-col flex-1 overflow-y-auto hidden-scrollbar">
                 <table class="min-w-full divide-y divide-slate-200">
@@ -146,7 +148,9 @@
                             <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Last Name</th>
                             <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Phone Number</th>
                             <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Relationship</th>
-                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Action</th>
+                            {% if current_user and not current_user.is_nurse() %}
+                                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Action</th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 bg-white">
@@ -158,23 +162,25 @@
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ contact.last_name }}</td>
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ contact.phone_number }}</td>
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ contact.relationship | capitalize }}</td>
-                                    <td class="px-4 flex sm:px-6 py-3 text-sm text-right space-x-2">
-                                        <button @click="selectedContactId = '{{ contact._id }}'; editContactModal = true"
-                                                type="button"
-                                                class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
-                                            Update
-                                        </button>
-                                        <button @click="selectedContactId = '{{ contact._id }}'; deleteContactModal = true"
-                                                type="button"
-                                                class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
-                                            Delete
-                                        </button>
-                                    </td>
+                                    {% if current_user and not current_user.is_nurse() %}
+                                        <td class="px-4 flex sm:px-6 py-3 text-sm text-right space-x-2">
+                                            <button @click="selectedContactId = '{{ contact._id }}'; editContactModal = true"
+                                                    type="button"
+                                                    class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
+                                                Update
+                                            </button>
+                                            <button @click="selectedContactId = '{{ contact._id }}'; deleteContactModal = true"
+                                                    type="button"
+                                                    class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
+                                                Delete
+                                            </button>
+                                        </td>
+                                    {% endif %}
                                 </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="6" class="px-4 sm:px-6 py-6 text-center text-slate-500">No emergency contacts found.</td>
+                                <td colspan="{% if current_user and not current_user.is_nurse() %}6{% else %}5{% endif %}" class="px-4 sm:px-6 py-6 text-center text-slate-500">No emergency contacts found.</td>
                             </tr>
                         {% endif %}
                     </tbody>

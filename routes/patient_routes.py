@@ -1,11 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash
 from utils.decorators import auth_required, admin_required, doctor_required, health_professionals_required, doctor_or_nurse_required
 from utils.patients import get_patients_statistics
 from utils.patients import(register_patient, validate_patient_data, validate_patient_assessment_data, update_patient, get_patient_by_id, get_all_patients, delete_patient, get_patient_assessments_history, validate_emergency_contact_data)
 from bson import ObjectId
 
 
-def init_patient_routes(app, db=None, patient_assessments_collection=None, patient_emergency_contact_collection=None):
+def init_patient_routes(app, db=None, patient_assessments_collection=None, emergency_contact_coll=None):
     @app.route("/patient-management")
     @auth_required
     @health_professionals_required
@@ -53,8 +53,8 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, patie
         
         # Get emergency contacts for this patient
         emergency_contacts = []
-        if patient_emergency_contact_collection is not None:
-            emergency_contacts = list(patient_emergency_contact_collection.find({"patient_id": patient_id}))
+        if emergency_contact_coll is not None:
+            emergency_contacts = list(emergency_contact_coll.find({"patient_id": patient_id}))
         
         return render_template('pages/patient_info.html', patient=patient, assessments=assessments, emergency_contacts=emergency_contacts)
     
@@ -92,6 +92,9 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, patie
         return redirect(url_for('patient_management'))
     
     
+    '''
+    MONGODB CRUD OPERATIONS FOR EMERGENCY CONTACTS
+    '''
     @app.route("/patient-management/patient/<int:patient_id>/assessments", methods=['POST'])
     @auth_required
     @doctor_required
@@ -163,7 +166,7 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, patie
                                      'smoking_status': smoking_status
                                  })
     
-    
+
     # Emergency Contact Routes
     @app.route("/patient-management/patient/<int:patient_id>/emergency-contact/add", methods=['POST'])
     @auth_required
@@ -175,6 +178,12 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, patie
             return redirect(url_for('patient_management'))
         
         try:
+            # Check if patient already has 2 emergency contacts
+            if emergency_contact_coll is not None:
+                existing_count = emergency_contact_coll.count_documents({"patient_id": patient_id})
+                if existing_count >= 2:
+                    raise ValueError("Patient cannot have more than 2 emergency contacts.")
+            
             first_name = request.form.get('first_name', '').strip()
             last_name = request.form.get('last_name', '').strip()
             phone_number = request.form.get('phone_number', '').strip()
@@ -190,8 +199,8 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, patie
                 "relationship": relationship
             }
             
-            if patient_emergency_contact_collection is not None:
-                patient_emergency_contact_collection.insert_one(new_contact)
+            if emergency_contact_coll is not None:
+                emergency_contact_coll.insert_one(new_contact)
             
             flash('Emergency contact added successfully!', 'success')
         except ValueError as err:
@@ -226,9 +235,9 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, patie
                 "relationship": relationship
             }
             
-            if patient_emergency_contact_collection is not None:
+            if emergency_contact_coll is not None:
             # match both _id AND patient_id
-                result = patient_emergency_contact_collection.update_one(
+                result = emergency_contact_coll.update_one(
                     {
                         "_id": ObjectId(contact_id),
                         "patient_id": int(patient_id) 
@@ -239,7 +248,7 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, patie
                 if result.modified_count > 0:
                     flash('Emergency contact updated successfully!', 'success')
                 else:
-                    flash('No changes were made.', 'info')
+                    flash('No changes were made.', 'warning')
         except ValueError as err:
             flash(str(err), 'error')
         except Exception as e:
@@ -253,8 +262,8 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, patie
     @doctor_required
     def delete_emergency_contact(patient_id, contact_id):
         try:
-            if patient_emergency_contact_collection is not None:
-                patient_emergency_contact_collection.delete_one({"_id": ObjectId(contact_id)})
+            if emergency_contact_coll is not None:
+                emergency_contact_coll.delete_one({"_id": ObjectId(contact_id)})
             flash('Emergency contact deleted successfully!', 'success')
         except Exception as e:
             flash(f'Failed to delete emergency contact: {str(e)}', 'error')
