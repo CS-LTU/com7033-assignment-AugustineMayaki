@@ -265,3 +265,22 @@ def get_patient_assessments_history(assessment, patient_id):
         assessments = assessment.find({"patient_id": patient_id}).sort("date", -1)
         return list(assessments)
     return []
+
+def validate_emergency_contact_data(first_name, last_name, phone_number, relationship):
+    """
+    Validate emergency contact data.
+    Raises ValueError with appropriate message if validation fails.
+    """
+    # Validate required fields
+    if not all([first_name, last_name, phone_number, relationship]):
+        raise ValueError("All fields are required.")
+    
+    # Validate phone number format
+    phone_pattern = r'^\+?[1-9]\d{1,14}$'
+    if not re.match(phone_pattern, phone_number):
+        raise ValueError("Please enter a valid phone number (e.g., +1234567890).")
+    
+    # Validate relationship is one of the allowed values
+    allowed_relationships = ['parent', 'brother', 'sister', 'family friend', 'friend', 'spouse']
+    if relationship.lower() not in allowed_relationships:
+        raise ValueError("Invalid relationship type selected.")

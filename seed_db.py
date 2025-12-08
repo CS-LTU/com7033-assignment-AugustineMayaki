@@ -15,19 +15,20 @@ load_dotenv()
 def get_mongo_connection():
     """
     Get MongoDB connection
-    Returns db and collection if successful, else None.
+    Returns db and collections if successful, else None.
     """
     try:
         client = MongoClient(os.environ.get("MONGODB_URI"))
         db = client[os.environ.get("MONGODB_NAME")]
         patient_assessments_collection = db[os.environ.get("MONGODB_PATIENT_ASSESSMENTS_COLLECTION")]
+        emergency_contact_coll = db[os.environ.get("MONGODB_EMERGENCY_CONTACT_COLL")]
         
         print("Connected to MongoDB")
-        return db, patient_assessments_collection
+        return db, patient_assessments_collection, emergency_contact_coll
     
     except Exception as e:
         print(f"MongoDB connection failed: {e}")
-        return None, None
+        return None, None, None
 
 def delete_database():
     """

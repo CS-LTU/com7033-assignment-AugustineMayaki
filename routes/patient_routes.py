@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash
 from utils.decorators import auth_required, admin_required, doctor_required, health_professionals_required, doctor_or_nurse_required
 from utils.patients import get_patients_statistics
-from utils.patients import(register_patient, validate_patient_data, validate_patient_assessment_data, update_patient, get_patient_by_id, get_all_patients, delete_patient, get_patient_assessments_history)
+from utils.patients import(register_patient, validate_patient_data, validate_patient_assessment_data, update_patient, get_patient_by_id, get_all_patients, delete_patient, get_patient_assessments_history, validate_emergency_contact_data)
+from bson import ObjectId
 
 
-def init_patient_routes(app, db=None, patient_assessments_collection=None):
+def init_patient_routes(app, db=None, patient_assessments_collection=None, emergency_contact_coll=None):
     @app.route("/patient-management")
     @auth_required
     @health_professionals_required
@@ -49,7 +50,13 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None):
             return redirect(url_for('patient_management'))
         
         assessments = get_patient_assessments_history(patient_assessments_collection, patient_id)
-        return render_template('pages/patient_info.html', patient=patient, assessments=assessments)
+        
+        # Get emergency contacts for this patient
+        emergency_contacts = []
+        if emergency_contact_coll is not None:
+            emergency_contacts = list(emergency_contact_coll.find({"patient_id": patient_id}))
+        
+        return render_template('pages/patient_info.html', patient=patient, assessments=assessments, emergency_contacts=emergency_contacts)
     
     
     @app.route("/patient-management/patient/<int:patient_id>/update", methods=['GET', 'POST'])
@@ -85,6 +92,9 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None):
         return redirect(url_for('patient_management'))
     
     
+    '''
+    MONGODB CRUD OPERATIONS FOR EMERGENCY CONTACTS
+    '''
     @app.route("/patient-management/patient/<int:patient_id>/assessments", methods=['POST'])
     @auth_required
     @doctor_required
@@ -155,6 +165,107 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None):
                                      'bmi': bmi,
                                      'smoking_status': smoking_status
                                  })
+    
+
+    # Emergency Contact Routes
+    @app.route("/patient-management/patient/<int:patient_id>/emergency-contact/add", methods=['POST'])
+    @auth_required
+    @doctor_required
+    def add_emergency_contact(patient_id):
+        patient = get_patient_by_id(patient_id)
+        if not patient:
+            flash("Patient not found.", "error")
+            return redirect(url_for('patient_management'))
+        
+        try:
+            # Check if patient already has 2 emergency contacts
+            if emergency_contact_coll is not None:
+                existing_count = emergency_contact_coll.count_documents({"patient_id": patient_id})
+                if existing_count >= 2:
+                    raise ValueError("Patient cannot have more than 2 emergency contacts.")
             
+            first_name = request.form.get('first_name', '').strip()
+            last_name = request.form.get('last_name', '').strip()
+            phone_number = request.form.get('phone_number', '').strip()
+            relationship = request.form.get('relationship', '').strip()
+            
+            validate_emergency_contact_data(first_name, last_name, phone_number, relationship)
+            
+            new_contact = {
+                "patient_id": int(patient_id),
+                "first_name": first_name,
+                "last_name": last_name,
+                "phone_number": phone_number,
+                "relationship": relationship
+            }
+            
+            if emergency_contact_coll is not None:
+                emergency_contact_coll.insert_one(new_contact)
+            
+            flash('Emergency contact added successfully!', 'success')
+        except ValueError as err:
+            flash(str(err), 'error')
+        except Exception as e:
+            flash(f'Failed to add emergency contact: {str(e)}', 'error')
         
+        return redirect(url_for('patient_info', patient_id=patient_id))
+    
+    
+    @app.route("/patient-management/patient/<int:patient_id>/emergency-contact/<contact_id>/update", methods=['POST'])
+    @auth_required
+    @doctor_required
+    def update_emergency_contact(patient_id, contact_id):
+        patient = get_patient_by_id(patient_id)
+        if not patient:
+            flash("Patient not found.", "error")
+            return redirect(url_for('patient_management'))
         
+        try:
+            first_name = request.form.get('first_name', '').strip()
+            last_name = request.form.get('last_name', '').strip()
+            phone_number = request.form.get('phone_number', '').strip()
+            relationship = request.form.get('relationship', '').strip()
+            
+            validate_emergency_contact_data(first_name, last_name, phone_number, relationship)
+            
+            updated_contact = {
+                "first_name": first_name,
+                "last_name": last_name,
+                "phone_number": phone_number,
+                "relationship": relationship
+            }
+            
+            if emergency_contact_coll is not None:
+            # match both _id AND patient_id
+                result = emergency_contact_coll.update_one(
+                    {
+                        "_id": ObjectId(contact_id),
+                        "patient_id": int(patient_id) 
+                    },
+                    {"$set": updated_contact}
+                )
+                
+                if result.modified_count > 0:
+                    flash('Emergency contact updated successfully!', 'success')
+                else:
+                    flash('No changes were made.', 'warning')
+        except ValueError as err:
+            flash(str(err), 'error')
+        except Exception as e:
+            flash(f'Failed to update emergency contact: {str(e)}', 'error')
+        
+        return redirect(url_for('patient_info', patient_id=patient_id))
+    
+    
+    @app.route("/patient-management/patient/<int:patient_id>/emergency-contact/<contact_id>/delete", methods=['POST'])
+    @auth_required
+    @doctor_required
+    def delete_emergency_contact(patient_id, contact_id):
+        try:
+            if emergency_contact_coll is not None:
+                emergency_contact_coll.delete_one({"_id": ObjectId(contact_id)})
+            flash('Emergency contact deleted successfully!', 'success')
+        except Exception as e:
+            flash(f'Failed to delete emergency contact: {str(e)}', 'error')
+        
+        return redirect(url_for('patient_info', patient_id=patient_id))
