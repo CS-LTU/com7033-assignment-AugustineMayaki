@@ -8,9 +8,7 @@
     backdrop_attrs='',
     is_open=''
     ) %}
-    <div x-show="{{ is_open }}"
-         id="{{ id }}"
-         class="fixed inset-0 z-40 {{ container_class }}">
+    <div id="{{ id }}" class="fixed inset-0 z-40 hidden {{ container_class }}">
         <div class="absolute inset-0 bg-[#00000099] {{ backdrop_class }}"></div>
         <div class="relative z-10 flex min-h-dvh w-full items-center justify-center p-4">
             <div class="w-[95%] 640:w-[70%] 1180:w-[50%] relative rounded-[18px] bg-primary-white p-7 drop-shadow-2xl {{ class_name }}">

@@ -13,11 +13,9 @@
                 {% call Button(class_name='mt-6', button_class='default_button') %}
                     <span>Login</span>
                 {% endcall %}
-                <div class="mt-3 mb-2 flex justify-between">
+                <div class="mt-3 mb-2">
                     <a href='{{ url_for("register") }}'
                        class="forgot_password cursor-pointer text-sm">New to the team? Sign up</a>
-                    <a href='{{ url_for("forgot_password") }}'
-                       class="forgot_password cursor-pointer text-sm">Forgot password?</a>
                 </div>
             </form>
         {% endcall %}

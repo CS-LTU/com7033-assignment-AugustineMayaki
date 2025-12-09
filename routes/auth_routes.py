@@ -59,19 +59,6 @@ def init_auth_routes(app):
         form_data = clear_form_data()
         return render_template('pages/auth/register.html', form_data=form_data)
 
-
-    @app.route("/forgot-password")
-    def forgot_password():
-        return render_template('pages/auth/forgot_password.html')
-
-    @app.route("/verify-mfa", methods=['GET', 'POST'])
-    def verify_mfa():
-        return render_template('pages/auth/verify.html')
-
-    @app.route("/set_password")
-    def set_password():
-        return render_template('pages/auth/set_password.html')
-
     @app.route("/logout")
     def logout():
         session.clear() 

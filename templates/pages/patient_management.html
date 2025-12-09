@@ -21,11 +21,10 @@
         }
     ] %}
     {{ overview_cards(overview_data=patients_overview) }}
-    <div x-data="{ registerModal: false, deletePatientModal: false, selectedPatientId: null }"
-         class="max-w-7xl mx-auto mt-6">
+    <div class="max-w-7xl mx-auto mt-6">
         {% if current_user and current_user.is_super_admin() %}
             {% set add_button %}
-                <div @click="registerModal=true">
+                <div onclick="openModal('registerModal')">
                     {% call Button(button_class='default_button !px-3 !text-sm') %}
                         Add New
                     {% endcall %}
@@ -82,7 +81,7 @@
                                             </form>
                                         {% endif %}
                                         {% if current_user.is_super_admin() %}
-                                            <button @click="selectedPatientId = {{ p.id }}; deletePatientModal = true"
+                                            <button onclick="openModal('deletePatientModal-{{ p.id }}')"
                                                     type="button"
                                                     class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
                                                 Delete
@@ -102,9 +101,7 @@
         {% endcall %}
         {% call Modal(
             id='registerModal',
-            class_name='max-w-lg',
-            is_open='registerModal'
-            ) %}
+            class_name='max-w-lg') %}
             <h2 class="text-xl font-semibold text-primary-black mb-4">Register a Patient</h2>
             <form method="post" action="{{ url_for("register_patient_route") }}">
                 <div class="space-y-4">
@@ -124,7 +121,7 @@
                     {{ Input(label='Email Address', placeholder='Enter email address', input_type='email', input_class='full_rounded_input', name='email', id='email', container_class='flex-1',  required=True) }}
                 </div>
                 <div class="flex gap-4 justify-end mt-6">
-                    {% call Button(type='button', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50', on_click='registerModal = false') %}
+                    {% call Button(type='button', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50', on_click='closeModal("registerModal")') %}
                         Cancel
                     {% endcall %}
                     {% call Button(type='submit', button_class='default_button', on_click='') %}
@@ -133,28 +130,42 @@
                 </div>
             </form>
         {% endcall %}
-        {% call Modal(
-            id='deletePatientModal',
-            class_name='max-w-lg',
-            is_open='deletePatientModal') %}
-            <h2 class="text-xl font-semibold text-primary-black mb-4">Delete Patient</h2>
-            <form method="post"
-                  :action="`{{ url_for('delete_patient_route', patient_id=0) }}`.replace('0', selectedPatientId)">
-                <p class="text-center text-lg">
-                    Are you sure you want to delete patient with ID: <span x-text="selectedPatientId" class="font-medium"></span>?
-                </p>
-                <p class="text-base text-center font-semibold mt-6 mb-5">
-                    Please note: <span class="text-red-600 font-normal">this action is irreversible.</span>
-                </p>
-                <div class="flex gap-4 justify-end mt-4">
-                    {% call Button(type='button', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50', on_click='deletePatientModal = false') %}
-                        Cancel
-                    {% endcall %}
-                    {% call Button(type='submit', button_class='default_button !bg-red-600 hover:!bg-red-700', on_click='') %}
-                        Delete
-                    {% endcall %}
-                </div>
-            </form>
-        {% endcall %}
+        {% for p in patients %}
+            {% call Modal(
+                id='deletePatientModal-' ~ p.id,
+                class_name='max-w-lg') %}
+                <h2 class="text-xl font-semibold text-primary-black mb-4">Delete Patient</h2>
+                <form method="post"
+                      action="{{ url_for('delete_patient_route', patient_id=p.id) }}">
+                    <p class="text-center text-lg">
+                        Are you sure you want to delete patient <span class="font-medium">{{ p.first_name }} {{ p.last_name }}</span>?
+                    </p>
+                    <p class="text-base text-center font-semibold mt-6 mb-5">
+                        Please note: <span class="text-red-600 font-normal">this action is irreversible.</span>
+                    </p>
+                    <div class="flex gap-4 justify-end mt-4">
+                        {% call Button(type='button', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50', on_click='closeModal("deletePatientModal-' ~ p.id ~ '")') %}
+                            Cancel
+                        {% endcall %}
+                        {% call Button(type='submit', button_class='default_button !bg-red-600 hover:!bg-red-700', on_click='') %}
+                            Delete
+                        {% endcall %}
+                    </div>
+                </form>
+            {% endcall %}
+        {% endfor %}
     </div>
+    <script>
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
 {% endblock %}

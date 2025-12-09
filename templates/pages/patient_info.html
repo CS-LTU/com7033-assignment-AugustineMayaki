@@ -87,8 +87,7 @@
             "value": "spouse"
         }
     ] %}
-    <div class="max-w-7xl mx-auto flex flex-col gap-6"
-         x-data="{ addContactModal: false, editContactModal: false, deleteContactModal: false, selectedContactId: null, selectedContact: {} }">
+    <div class="max-w-7xl mx-auto flex flex-col gap-6">
         {% set add_button %}
             <form action='{{ url_for("patient_management") }}' method="get">
                 {% call Button(class_name='max-w-[150px] w-full', button_class='default_button !px-3 !text-sm') %}
@@ -129,7 +128,7 @@
         {% endcall %}
         {% if current_user and not current_user.is_nurse() %}
             {% set add_emergency_button %}
-                {% call Button(on_click='addContactModal = true', type='button', class_name='max-w-[150px] w-full', button_class='default_button !px-3 !text-sm') %}
+                {% call Button(on_click='openModal("addContactModal")', type='button', class_name='max-w-[150px] w-full', button_class='default_button !px-3 !text-sm') %}
                     Add Contact
                 {% endcall %}
             {% endset %}
@@ -164,12 +163,12 @@
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ contact.relationship | capitalize }}</td>
                                     {% if current_user and not current_user.is_nurse() %}
                                         <td class="px-4 flex sm:px-6 py-3 text-sm text-right space-x-2">
-                                            <button @click="selectedContactId = '{{ contact._id }}'; editContactModal = true"
+                                            <button onclick="openModal('editContactModal-{{ contact._id }}')"
                                                     type="button"
                                                     class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
                                                 Update
                                             </button>
-                                            <button @click="selectedContactId = '{{ contact._id }}'; deleteContactModal = true"
+                                            <button onclick="openModal('deleteContactModal-{{ contact._id }}')"
                                                     type="button"
                                                     class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
                                                 Delete
@@ -180,7 +179,10 @@
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="{% if current_user and not current_user.is_nurse() %}6{% else %}5{% endif %}" class="px-4 sm:px-6 py-6 text-center text-slate-500">No emergency contacts found.</td>
+                                <td colspan="{% if current_user and not current_user.is_nurse() %}6{% else %}5{% endif %}"
+                                    class="px-4 sm:px-6 py-6 text-center text-slate-500">
+                                    No emergency contacts found.
+                                </td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -301,9 +303,7 @@
         {% endcall %}
         {% call Modal(
             id='addContactModal',
-            class_name='max-w-lg',
-            is_open='addContactModal'
-            ) %}
+            class_name='max-w-lg') %}
             <h2 class="text-xl font-semibold text-primary-black mb-4">Add Emergency Contact</h2>
             <form method="post"
                   action="{{ url_for('add_emergency_contact', patient_id=patient.id) }}">
@@ -318,7 +318,7 @@
                     </div>
                 </div>
                 <div class="flex gap-4 justify-end mt-6">
-                    {% call Button(on_click='addContactModal = false', type='button', class_name='max-w-[150px] w-full', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50') %}
+                    {% call Button(on_click='closeModal("addContactModal")', type='button', class_name='max-w-[150px] w-full', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50') %}
                         Cancel
                     {% endcall %}
                     {% call Button(type='submit', class_name='max-w-[150px] w-full', button_class='default_button') %}
@@ -327,61 +327,65 @@
                 </div>
             </form>
         {% endcall %}
-        {% call Modal(
-            id='editContactModal',
-            class_name='max-w-lg',
-            is_open='editContactModal'
-            ) %}
-            <h2 class="text-xl font-semibold text-primary-black mb-4">Update Emergency Contact</h2>
-            <form method="post"
-                  :action="`{{ url_for('update_emergency_contact', patient_id=patient.id, contact_id='CONTACT_ID') }}`.replace('CONTACT_ID', selectedContactId)">
-                <div class="space-y-4">
-                    {% for contact in emergency_contacts %}
-                        <template x-if="selectedContactId == '{{ contact._id }}'">
-                            <div>
-                                <div class="flex justify-between items-center gap-4">
-                                    {{ Input(label='First Name', placeholder='Enter first name', input_class='full_rounded_input', name='first_name', value=contact.first_name, required=True) }}
-                                    {{ Input(label='Last Name', placeholder='Enter last name', input_class='full_rounded_input', name='last_name', value=contact.last_name, required=True) }}
-                                </div>
-                                <div class="flex justify-between items-center gap-4 mt-4">
-                                    {{ Input(label='Phone Number', placeholder='Enter phone number', input_class='full_rounded_input', name='phone_number', input_type='tel', container_class='flex-1', value=contact.phone_number, required=True) }}
-                                    {{ Dropdown(id='relationship_{{ contact._id }}', name='relationship', label='Relationship', options=relationship_options, placeholder='Select relationship', class_name='flex-1', value=contact.relationship, required=True) }}
-                                </div>
-                            </div>
-                        </template>
-                    {% endfor %}
-                </div>
-                <div class="flex gap-4 justify-end mt-6">
-                    {% call Button(on_click='editContactModal = false', type='button', class_name='max-w-[150px] w-full', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50') %}
-                        Cancel
-                    {% endcall %}
-                    {% call Button(type='submit', class_name='max-w-[150px] w-full', button_class='default_button') %}
-                        Update
-                    {% endcall %}
-                </div>
-            </form>
-        {% endcall %}
-        <!-- Delete  Contact Modal -->
-        {% call Modal(
-            id='deleteContactModal',
-            class_name='max-w-md',
-            is_open='deleteContactModal'
-            ) %}
-            <h2 class="text-xl font-semibold text-primary-black mb-4">Delete Emergency Contact</h2>
-            <p class="text-slate-600 mb-6">
-                Are you sure you want to delete this emergency contact? This action cannot be undone.
-            </p>
-            <form method="post"
-                  :action="`{{ url_for('delete_emergency_contact', patient_id=patient.id, contact_id='CONTACT_ID') }}`.replace('CONTACT_ID', selectedContactId)">
-                <div class="flex gap-4 justify-end">
-                    {% call Button(on_click='deleteContactModal = false', type='button', class_name='max-w-[150px] w-full', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50') %}
-                        Cancel
-                    {% endcall %}
-                    {% call Button(type='submit', class_name='max-w-[150px] w-full', button_class='default_button !bg-red-600 hover:bg-red-700 !text-white') %}
-                        Delete
-                    {% endcall %}
-                </div>
-            </form>
-        {% endcall %}
+        {% for contact in emergency_contacts %}
+            {% call Modal(
+                id='editContactModal-' ~ contact._id,
+                class_name='max-w-lg') %}
+                <h2 class="text-xl font-semibold text-primary-black mb-4">Update Emergency Contact</h2>
+                <form method="post"
+                      action="{{ url_for('update_emergency_contact', patient_id=patient.id, contact_id=contact._id) }}">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center gap-4">
+                            {{ Input(label='First Name', placeholder='Enter first name', input_class='full_rounded_input', name='first_name', value=contact.first_name, required=True) }}
+                            {{ Input(label='Last Name', placeholder='Enter last name', input_class='full_rounded_input', name='last_name', value=contact.last_name, required=True) }}
+                        </div>
+                        <div class="flex justify-between items-center gap-4">
+                            {{ Input(label='Phone Number', placeholder='Enter phone number', input_class='full_rounded_input', name='phone_number', input_type='tel', container_class='flex-1', value=contact.phone_number, required=True) }}
+                            {{ Dropdown(id='relationship_' ~ contact._id, name='relationship', label='Relationship', options=relationship_options, placeholder='Select relationship', class_name='flex-1', value=contact.relationship, required=True) }}
+                        </div>
+                    </div>
+                    <div class="flex gap-4 justify-end mt-6">
+                        {% call Button(on_click='closeModal("editContactModal-' ~ contact._id ~ '")', type='button', class_name='max-w-[150px] w-full', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50') %}
+                            Cancel
+                        {% endcall %}
+                        {% call Button(type='submit', class_name='max-w-[150px] w-full', button_class='default_button') %}
+                            Update
+                        {% endcall %}
+                    </div>
+                </form>
+            {% endcall %}
+            {% call Modal(
+                id='deleteContactModal-' ~ contact._id,
+                class_name='max-w-md') %}
+                <h2 class="text-xl font-semibold text-primary-black mb-4">Delete Emergency Contact</h2>
+                <p class="text-slate-600 mb-6">
+                    Are you sure you want to delete <span class="font-medium">{{ contact.first_name }} {{ contact.last_name }}</span>? This action cannot be undone.
+                </p>
+                <form method="post"
+                      action="{{ url_for('delete_emergency_contact', patient_id=patient.id, contact_id=contact._id) }}">
+                    <div class="flex gap-4 justify-end">
+                        {% call Button(on_click='closeModal("deleteContactModal-' ~ contact._id ~ '")', type='button', class_name='max-w-[150px] w-full', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50') %}
+                            Cancel
+                        {% endcall %}
+                        {% call Button(type='submit', class_name='max-w-[150px] w-full', button_class='default_button !bg-red-600 hover:bg-red-700 !text-white') %}
+                            Delete
+                        {% endcall %}
+                    </div>
+                </form>
+            {% endcall %}
+        {% endfor %}
     </div>
+    <script>
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
 {% endblock %}
