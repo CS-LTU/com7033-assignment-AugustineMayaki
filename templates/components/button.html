@@ -10,7 +10,7 @@
     <div class="relative {{ class_name }}">
         <button type="{{ type }}"
                 {% if disabled %}disabled{% endif %}
-                {% if on_click %}@click="{{ on_click }}"{% endif %}
+                {% if on_click %}onclick="{{ on_click }}"{% endif %}
                 class="button {% if disabled %}cursor-not-allowed bg-opacity-50{% endif %} {{ button_class }}">
             {{ leading_icon }}
             {{ caller() }}

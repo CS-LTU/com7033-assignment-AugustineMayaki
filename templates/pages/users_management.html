@@ -20,7 +20,7 @@
             "value": "nurse"
         }
     ] %}
-    <div x-data="{ inviteModalOpen: false, isdropdownOpen: false,  deactivateUserModal: false, activateUserModal:false, selectedUserId: null }">
+    <div>
         {{ overview_cards(overview_data=users_overview) }}
         <div class="max-w-7xl mx-auto mt-6">
             {% call Card(
@@ -62,7 +62,7 @@
                                     {% if u.role != 'super admin' %}
                                         {% if u.is_active %}
                                             <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2">
-                                                <button @click="deactivateUserModal = true,selectedUserId = {{ u.id }}"
+                                                <button onclick="openModal('deactivateUserModal-{{ u.id }}')"
                                                         type="button"
                                                         class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer">
                                                     Deactivate
@@ -70,7 +70,7 @@
                                             </td>
                                         {% else %}
                                             <td class="px-4 sm:px-6 py-3 text-sm text-right space-x-2">
-                                                <button @click="activateUserModal = true,selectedUserId = {{ u.id }}"
+                                                <button onclick="openModal('activateUserModal-{{ u.id }}')"
                                                         class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer">
                                                     Activate
                                                 </button>
@@ -92,61 +92,73 @@
                 </div>
             {% endcall %}
         </div>
-        {% call Modal(
-            id='deactivateUserModal',
-            class_name='max-w-xl',
-            is_open='deactivateUserModal') %}
-            <h2 class="text-xl font-semibold text-primary-black mb-4">Deactivate User</h2>
-            <form method="post"
-                  :action="`{{ url_for('deactivate_user_route', user_id=0) }}`.replace('0', selectedUserId)">
-                <p class="text-center text-lg">
-                    Are you sure you want to deactivate user account with ID:<span x-text="selectedUserId" class="font-medium"></span> ?
-                </p>
-                <p class="text-base text-center font-semibold mt-6 mb-3">
-                    Please note: <span class="text-red-600 font-normal">this action will restrict access to the system.</span>
-                </p>
-                <p class="text-sm text-center text-gray-600">You can reactivate the account at any time.</p>
-                <div class="flex gap-4 justify-end mt-4">
-                    {% call Button(type='button', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50', on_click='deactivateUserModal = false') %}
-                        Cancel
-                    {% endcall %}
-                    {% call Button(type='submit', button_class='default_button !bg-red-600 hover:!bg-red-700', on_click='') %}
-                        Deactivate
-                    {% endcall %}
-                </div>
-            </form>
-        {% endcall %}
-        {% call Modal(
-            id='activateUserModal',
-            class_name='max-w-xl',
-            is_open='activateUserModal') %}
-            <h2 class="text-xl font-semibold text-primary-black mb-4">Activate User</h2>
-            <form method="post"
-                  :action="`{{ url_for('activate_user_route', user_id=0) }}`.replace('0', selectedUserId)">
-                <p class="text-center text-lg">
-                    Are you sure you want to activate user account with ID:
-                    <span x-text="selectedUserId" class="font-medium"></span>?
-                </p>
-                <p class="text-base text-center font-semibold mt-6 mb-3">
-                    Once activated,
-                    <span class="text-blue-800 font-normal">the user will regain full access to the system.</span>
-                </p>
-                <p class="text-sm text-center text-gray-600">This action can be reversed by deactivating the user again.</p>
-                <div class="flex gap-4 justify-end mt-4">
-                    {% call Button(
-                        type='button',
-                        button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50',
-                        on_click='activateUserModal = false') %}
-                        Cancel
-                    {% endcall %}
-                    {% call Button(
-                        type='submit',
-                        button_class='default_button',
-                        on_click='') %}
-                        Activate
-                    {% endcall %}
-                </div>
-            </form>
-        {% endcall %}
+        {% for u in users %}
+            {% call Modal(
+                id='deactivateUserModal-' ~ u.id,
+                class_name='max-w-xl') %}
+                <h2 class="text-xl font-semibold text-primary-black mb-4">Deactivate User</h2>
+                <form method="post"
+                      action="{{ url_for('deactivate_user_route', user_id=u.id) }}">
+                    <p class="text-center text-lg">
+                        Are you sure you want to deactivate <span class="font-medium">{{ u.first_name }} {{ u.last_name }}</span>'s account?
+                    </p>
+                    <p class="text-base text-center font-semibold mt-6 mb-3">
+                        Please note: <span class="text-red-600 font-normal">this action will restrict access to the system.</span>
+                    </p>
+                    <p class="text-sm text-center text-gray-600">You can reactivate the account at any time.</p>
+                    <div class="flex gap-4 justify-end mt-4">
+                        {% call Button(type='button', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50', on_click='closeModal("deactivateUserModal-' ~ u.id ~ '")') %}
+                            Cancel
+                        {% endcall %}
+                        {% call Button(type='submit', button_class='default_button !bg-red-600 hover:!bg-red-700', on_click='') %}
+                            Deactivate
+                        {% endcall %}
+                    </div>
+                </form>
+            {% endcall %}
+            {% call Modal(
+                id='activateUserModal-' ~ u.id,
+                class_name='max-w-xl') %}
+                <h2 class="text-xl font-semibold text-primary-black mb-4">Activate User</h2>
+                <form method="post"
+                      action="{{ url_for('activate_user_route', user_id=u.id) }}">
+                    <p class="text-center text-lg">
+                        Are you sure you want to activate <span class="font-medium">{{ u.first_name }} {{ u.last_name }}</span>'s account?
+                    </p>
+                    <p class="text-base text-center font-semibold mt-6 mb-3">
+                        Once activated,
+                        <span class="text-blue-800 font-normal">the user will regain full access to the system.</span>
+                    </p>
+                    <p class="text-sm text-center text-gray-600">This action can be reversed by deactivating the user again.</p>
+                    <div class="flex gap-4 justify-end mt-4">
+                        {% call Button(
+                            type='button',
+                            button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50',
+                            on_click='closeModal("activateUserModal-' ~ u.id ~ '")') %}
+                            Cancel
+                        {% endcall %}
+                        {% call Button(
+                            type='submit',
+                            button_class='default_button',
+                            on_click='') %}
+                            Activate
+                        {% endcall %}
+                    </div>
+                </form>
+            {% endcall %}
+        {% endfor %}
     </div>
+    <script>
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
 {% endblock %}
