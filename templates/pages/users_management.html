@@ -99,6 +99,7 @@
                 <h2 class="text-xl font-semibold text-primary-black mb-4">Deactivate User</h2>
                 <form method="post"
                       action="{{ url_for('deactivate_user_route', user_id=u.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <p class="text-center text-lg">
                         Are you sure you want to deactivate <span class="font-medium">{{ u.first_name }} {{ u.last_name }}</span>'s account?
                     </p>
@@ -122,6 +123,7 @@
                 <h2 class="text-xl font-semibold text-primary-black mb-4">Activate User</h2>
                 <form method="post"
                       action="{{ url_for('activate_user_route', user_id=u.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <p class="text-center text-lg">
                         Are you sure you want to activate <span class="font-medium">{{ u.first_name }} {{ u.last_name }}</span>'s account?
                     </p>

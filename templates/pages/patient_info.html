@@ -103,6 +103,7 @@
             <span class="text-sm text-gray-600">Patient ID: {{ patient.id }}</span>
             <form method="post"
                   action="{{ url_for('update_patient_route', patient_id=patient.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <div class="flex flex-col flex-1 overflow-y-auto hidden-scrollbar h-[250px] md:h-full">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {{ Input(label='First Name', placeholder='Enter your first name', name='first_name',input_class='full_rounded_input', value=patient.first_name, required=True) }}
@@ -196,6 +197,7 @@
                 ) %}
                 <form method="post"
                       action="{{ url_for('run_patient_assessment', patient_id=patient.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <div class="flex flex-col flex-1 overflow-y-auto hidden-scrollbar h-[255px]">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
                             {{ Dropdown(id='occupationType',
@@ -307,6 +309,7 @@
             <h2 class="text-xl font-semibold text-primary-black mb-4">Add Emergency Contact</h2>
             <form method="post"
                   action="{{ url_for('add_emergency_contact', patient_id=patient.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <div class="space-y-4">
                     <div class="flex justify-between items-center gap-4">
                         {{ Input(label='First Name', placeholder='Enter first name', input_class='full_rounded_input', name='first_name', required=True) }}
@@ -334,6 +337,7 @@
                 <h2 class="text-xl font-semibold text-primary-black mb-4">Update Emergency Contact</h2>
                 <form method="post"
                       action="{{ url_for('update_emergency_contact', patient_id=patient.id, contact_id=contact._id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <div class="space-y-4">
                         <div class="flex justify-between items-center gap-4">
                             {{ Input(label='First Name', placeholder='Enter first name', input_class='full_rounded_input', name='first_name', value=contact.first_name, required=True) }}
@@ -363,6 +367,7 @@
                 </p>
                 <form method="post"
                       action="{{ url_for('delete_emergency_contact', patient_id=patient.id, contact_id=contact._id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <div class="flex gap-4 justify-end">
                         {% call Button(on_click='closeModal("deleteContactModal-' ~ contact._id ~ '")', type='button', class_name='max-w-[150px] w-full', button_class='default_button !bg-transparent !text-slate-700 border border-slate-300 hover:bg-slate-50') %}
                             Cancel

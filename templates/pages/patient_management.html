@@ -104,6 +104,7 @@
             class_name='max-w-lg') %}
             <h2 class="text-xl font-semibold text-primary-black mb-4">Register a Patient</h2>
             <form method="post" action="{{ url_for("register_patient_route") }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <div class="space-y-4">
                     <div class="flex justify-between items-center gap-4">
                         {{ Input(label='First Name', placeholder='Enter first name', input_class='full_rounded_input', name='first_name', id='first_name', required=True) }}
@@ -137,6 +138,7 @@
                 <h2 class="text-xl font-semibold text-primary-black mb-4">Delete Patient</h2>
                 <form method="post"
                       action="{{ url_for('delete_patient_route', patient_id=p.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                     <p class="text-center text-lg">
                         Are you sure you want to delete patient <span class="font-medium">{{ p.first_name }} {{ p.last_name }}</span>?
                     </p>
