@@ -66,11 +66,24 @@ def delete_database():
 #  INIT DATABASE
 
 def init_database():
+    """
+    Initialize database tables and seed initial data.
+    Only runs full seeding once - checks for flag file.
+    """
+    # Check if database has already been seeded
+    seed_flag_file = os.path.join('instance', '.db_seeded')
+    
+    # Always create tables (in case they don't exist)
     init_roles()
     init_employee()
     init_users()
     init_patients_demographics()
-
+    
+    # Check if already seeded
+    if os.path.exists(seed_flag_file):
+        print("Database already seeded. Skipping seed process.")
+        return
+    
     print("Seeding database with initial data...")
 
     # SQLITE CONNECTION 
@@ -197,7 +210,13 @@ def init_database():
     conn.commit()
     conn.close()
 
-    print("\n Database initialized & seeded successfully!")
+    # Create flag file to indicate seeding is complete
+    os.makedirs('instance', exist_ok=True)
+    with open(seed_flag_file, 'w') as f:
+        f.write(datetime.now().isoformat())
+
+    print("\n✓ Database initialized & seeded successfully!")
+    print("(Future runs will skip seeding. Delete instance/.db_seeded to re-seed)")
 
 
 if __name__ == '__main__':

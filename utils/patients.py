@@ -51,6 +51,51 @@ def get_all_patients():
         })
     return patients
 
+def get_patients_paginated(page=1, per_page=20):
+    """
+    Fetch patients with pagination.
+    Returns (patients_list, total_pages).
+    """
+    conn = sqlite3.connect(db_name())
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM patients_demographics")
+    total_patients = cursor.fetchone()[0]
+
+    # Calculate LIMIT / OFFSET
+    offset = (page - 1) * per_page
+
+    cursor.execute('''
+        SELECT id, first_name, last_name, email, date_of_birth, gender, source_row_id, created_at
+        FROM patients_demographics
+        ORDER BY created_at DESC
+        LIMIT ? OFFSET ?
+    ''', (per_page, offset))
+    rows = cursor.fetchall()
+    conn.close()
+
+    patients = []
+    for r in rows:
+        patients.append({
+            'id': r[0],
+            'first_name': r[1],
+            'last_name': r[2],
+            'email': r[3],
+            'date_of_birth': r[4],
+            'gender': r[5],
+            'source_row_id': r[6],
+            'created_at': r[7]
+        })
+
+    # avoid division by zero
+    if total_patients == 0:
+        total_pages = 1
+    else:
+        total_pages = (total_patients + per_page - 1) // per_page
+
+    return patients, total_pages
+
+
     
 def get_patients_statistics(assessments=None):
     """
