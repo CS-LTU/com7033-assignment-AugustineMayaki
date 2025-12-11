@@ -13,7 +13,7 @@ def get_patient_by_id(id):
     cursor = conn.cursor()
 
     cursor.execute('''
-    SELECT id, first_name, last_name, email, date_of_birth, gender, created_at
+    SELECT id, first_name, last_name, email, date_of_birth, gender, source_row_id, created_at
     FROM patients_demographics
     WHERE id = ?
     ''', (id,))
@@ -21,6 +21,7 @@ def get_patient_by_id(id):
     conn.close()
     if row:
         return Patient(*row)
+
     
 def get_all_patients():
     """
@@ -30,12 +31,12 @@ def get_all_patients():
     cursor = conn.cursor()
 
     cursor.execute('''
-    SELECT id, first_name, last_name, email, date_of_birth, gender, created_at
-    FROM patients_demographics
+        SELECT id, first_name, last_name, email, date_of_birth, gender, source_row_id, created_at
+        FROM patients_demographics
     ''')
     rows = cursor.fetchall()
     conn.close()
-    
+
     patients = []
     for r in rows:
         patients.append({
@@ -45,7 +46,8 @@ def get_all_patients():
             'email': r[3],
             'date_of_birth': r[4],
             'gender': r[5],
-            'created_at': r[6]
+            'source_row_id': r[6],
+            'created_at': r[7]
         })
     return patients
 
@@ -93,9 +95,10 @@ def register_patient(first_name, last_name, email, date_of_birth, gender):
         cursor = conn.cursor()
         
         cursor.execute('''
-        INSERT INTO patients_demographics (first_name, last_name, email, date_of_birth, gender)
-        VALUES (?, ?, ?, ?, ?)
-        ''', ( first_name, last_name, email, date_of_birth, gender))
+        INSERT INTO patients_demographics (first_name, last_name, email, date_of_birth, gender, source_row_id)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ''', (first_name, last_name, email, date_of_birth, gender, None))
+
         conn.commit()
         conn.close()
         return True

@@ -124,11 +124,20 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, emerg
                 smoking_status=smoking_status
             )
             
+            """
+            Pulls source_row_id from the patient object and adds, 
+            it will be none if the patient was not seeded from the CSV
+            dataset.
+            """
+            
+            source_row_id = getattr(patient, "source_row_id", None)
+
             new_assessment = {
                 "patient_id": int(patient_id),
+                "source_row_id": source_row_id,
                 **result
             }
-            
+
             if patient_assessments_collection is not None:
                 patient_assessments_collection.insert_one(new_assessment)
             flash('Patient assessment recorded successfully!', 'success')

@@ -27,3 +27,4 @@ delete_database.py
 
 clear_mongo.py
 delete_database.py
+reset_patients.py
