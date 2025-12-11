@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 import os
 from dotenv import load_dotenv
 from routes.auth_routes import init_auth_routes
@@ -7,12 +7,14 @@ from routes.patient_routes import init_patient_routes
 from utils.auth import get_current_user
 from datetime import datetime
 from seed_db import init_database, get_mongo_connection
+from flask_wtf import CSRFProtect
 
 load_dotenv()
 
 app = Flask(__name__)
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+csrf = CSRFProtect(app)
 
 init_database()
 
@@ -43,6 +45,12 @@ def format_date(date):
 init_auth_routes(app)
 init_user_routes(app)
 init_patient_routes(app, db, patient_assessments_collection, emergency_contact_coll)
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Custom 404 error page"""
+    return render_template('errors/404.html'), 404
 
 
 

@@ -7,6 +7,7 @@
     <div class="w-full max-w-[423px]">
         {% call Card() %}
             <form method="post" action='/register'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <h2 class="text-xl 560:text-2xl text-primary-black text-center font-medium">Register</h2>
                 {{ Input(label='Employee ID', id='employee_id', name='employee_id', required=True, placeholder='Enter your employee Id', input_class='full_rounded_input', container_class='flex-1') }}
                 {{ Input(label='Email Address', id='email', name='email', input_type='email', required=True, placeholder='Enter your email address', input_class='full_rounded_input') }}
