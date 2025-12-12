@@ -17,8 +17,8 @@ package-lock.json
 
 
 # Database
-instance/
-neuroPredict
+
+neuroPredict.db
 *.sqlite3
 *.db
 
