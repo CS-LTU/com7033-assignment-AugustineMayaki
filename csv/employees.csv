@@ -1,0 +1,14 @@
+first_name,last_name,email,employee_id,role
+John,Smith,john.smith@neuropredict.com,EMP001,doctor
+Sarah,Johnson,sarah.johnson@neuropredict.com,EMP002,nurse
+Michael,Brown,michael.brown@neuropredict.com,EMP003,super admin
+Emily,Clark,emily.clark@neuropredict.com,EMP004,doctor
+Daniel,Adams,daniel.adams@neuropredict.com,EMP005,nurse
+Olivia,Turner,olivia.turner@neuropredict.com,EMP006,doctor
+Ethan,Walker,ethan.walker@neuropredict.com,EMP007,nurse
+Sophia,Hughes,sophia.hughes@neuropredict.com,EMP008,doctor
+Liam,Bennett,liam.bennett@neuropredict.com,EMP009,super admin
+Ava,Reed,ava.reed@neuropredict.com,EMP010,nurse
+Noah,Mitchell,noah.mitchell@neuropredict.com,EMP011,doctor
+Isabella,Cooper,isabella.cooper@neuropredict.com,EMP012,nurse
+James,Stevens,james.stevens@neuropredict.com,EMP013,doctor

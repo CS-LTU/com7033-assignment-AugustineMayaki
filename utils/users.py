@@ -75,6 +75,61 @@ def get_all_users():
 
     return users
 
+def get_users_paginated(page=1, per_page=10):
+    """
+    Fetch users with pagination.
+    Returns (users_list, total_pages).
+    """
+    conn = sqlite3.connect(db_name())
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM users")
+    total_users = cursor.fetchone()[0]
+
+    # Calculate LIMIT / OFFSET
+    offset = (page - 1) * per_page
+
+    cursor.execute("""
+        SELECT 
+            u.id, 
+            u.employee_id, 
+            u.email, 
+            u.created_at, 
+            u.is_active,
+            e.first_name, 
+            e.last_name, 
+            e.role
+        FROM users AS u
+        JOIN employee AS e ON u.employee_id = e.employee_id
+        ORDER BY u.created_at DESC
+        LIMIT ? OFFSET ?
+    """, (per_page, offset))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    users = []
+
+    for r in rows:
+        users.append({
+            "id": r[0],
+            "employee_id": r[1],
+            "email": r[2],
+            "created_at": r[3],
+            "is_active": bool(r[4]),
+            "first_name": r[5],
+            "last_name": r[6],
+            "role": r[7]
+        })
+
+    # avoid division by zero
+    if total_users == 0:
+        total_pages = 1
+    else:
+        total_pages = (total_users + per_page - 1) // per_page
+
+    return users, total_pages
+
 
 def get_user_count():
     """Get total number of users."""

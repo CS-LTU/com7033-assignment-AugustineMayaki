@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash
 from utils.decorators import auth_required, admin_required, doctor_required, health_professionals_required, doctor_or_nurse_required
 from utils.patients import get_patients_statistics
-from utils.patients import(register_patient, validate_patient_data, validate_patient_assessment_data, update_patient, get_patient_by_id, get_all_patients, delete_patient, get_patient_assessments_history, validate_emergency_contact_data)
+from utils.patients import(register_patient, validate_patient_data, validate_patient_assessment_data, update_patient, get_patient_by_id, get_all_patients, delete_patient, get_patient_assessments_history, validate_emergency_contact_data, get_patients_paginated)
 from bson import ObjectId
 
 
@@ -10,9 +10,21 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, emerg
     @auth_required
     @health_professionals_required
     def patient_management():
-        return render_template('pages/patient_management.html', 
-                             patients_overview=get_patients_statistics(patient_assessments_collection), 
-                             patients=get_all_patients())
+        
+        page = request.args.get("page", default=1, type=int)
+        per_page = 10 
+
+        patients, total_pages = get_patients_paginated(page=page, per_page=per_page)
+
+        return render_template(
+            'pages/patient_management.html',
+            patients_overview=get_patients_statistics(patient_assessments_collection),
+            patients=patients,
+            page=page,
+            total_pages=total_pages,
+            per_page=per_page,
+        )
+
     
     
     @app.route("/register-patient", methods=['GET', 'POST'])
@@ -124,11 +136,20 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, emerg
                 smoking_status=smoking_status
             )
             
+            """
+            Pulls source_row_id from the patient object and adds, 
+            it will be none if the patient was not seeded from the CSV
+            dataset.
+            """
+            
+            source_row_id = getattr(patient, "source_row_id", None)
+
             new_assessment = {
                 "patient_id": int(patient_id),
+                "source_row_id": source_row_id,
                 **result
             }
-            
+
             if patient_assessments_collection is not None:
                 patient_assessments_collection.insert_one(new_assessment)
             flash('Patient assessment recorded successfully!', 'success')
