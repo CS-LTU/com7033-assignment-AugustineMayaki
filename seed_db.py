@@ -195,7 +195,7 @@ def init_database():
                     "bmi": bmi_clean,
                     "smoking_status": row.get("smoking_status"),
                     "heart_disease": int(row["heart_disease"]),
-                    "stroke_status": row.get("smoking_status"),
+                    "stroke_status": row.get("stroke_status"),
                 }
 
                 patient_assessments_collection.insert_one(assessment_doc)
