@@ -1,3 +1,4 @@
+
 import csv
 import os
 import sqlite3
@@ -11,6 +12,7 @@ from models.employee import init_employee
 from utils.init_db import db_name
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from gen_fake_demographs import generate_fake_demographics
 
 load_dotenv()
 
@@ -131,81 +133,78 @@ def init_database():
     
     print("\n Seeding patient demographics + assessments from CSV...")
 
-    PATIENT_CSV = "csv/healthcare_dataset_stroke_with_names.csv"
+    # Use in-memory fake demographics instead of reading from CSV
+    df = generate_fake_demographics()
 
-    if os.path.exists(PATIENT_CSV):
-        df = pd.read_csv(PATIENT_CSV)
+    sqlite_inserted = 0
+    mongo_inserted = 0
+    skipped = 0
 
-        sqlite_inserted = 0
-        mongo_inserted = 0
-        skipped = 0
+    for _, row in df.iterrows():
+        csv_source_id = int(row["id"])  # original dataset row id
 
-        for _, row in df.iterrows():
-            csv_source_id = int(row["id"])  # original dataset row id
+        # SQLite Insert
+        first_name = row["first_name"]
+        last_name = row["last_name"]
+        email = row["email"]
+        gender = row["gender"]
+        age = row["age"]
+        date_of_birth = dob_from_age(age)
 
-            # SQLite Insert
-            first_name = row["first_name"]
-            last_name = row["last_name"]
-            email = row["email"]
-            gender = row["gender"]
-            age = row["age"]
-            date_of_birth = dob_from_age(age)
+        # Check if patient already exists by email or source_row_id
+        cursor.execute(
+            "SELECT id FROM patients_demographics WHERE email = ? OR source_row_id = ?",
+            (email, csv_source_id)
+        )
+        existing = cursor.fetchone()
 
-            # Check if patient already exists by email or source_row_id
+        if existing:
+            patient_id = existing[0]
+            skipped += 1
+        else:
             cursor.execute(
-                "SELECT id FROM patients_demographics WHERE email = ? OR source_row_id = ?",
-                (email, csv_source_id)
+                """
+                INSERT INTO patients_demographics
+                    (first_name, last_name, email, date_of_birth, gender, source_row_id)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (first_name, last_name, email, date_of_birth, gender, csv_source_id),
             )
-            existing = cursor.fetchone()
 
-            if existing:
-                patient_id = existing[0]
-                skipped += 1
-            else:
-                cursor.execute(
-                    """
-                    INSERT INTO patients_demographics
-                        (first_name, last_name, email, date_of_birth, gender, source_row_id)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """,
-                    (first_name, last_name, email, date_of_birth, gender, csv_source_id),
-                )
+            patient_id = cursor.lastrowid
+            sqlite_inserted += 1
 
-                patient_id = cursor.lastrowid
-                sqlite_inserted += 1
+        # Mongo Insert check if assessment already exists for this source_row_id
+        existing_assessment = patient_assessments_collection.find_one({
+            "source_row_id": csv_source_id
+        })
 
-            # Mongo Insert check if assessment already exists for this source_row_id
-            existing_assessment = patient_assessments_collection.find_one({
-                "source_row_id": csv_source_id
-            })
+        if not existing_assessment:
+            bmi = row.get("bmi")
+            bmi_clean = None if pd.isna(bmi) else float(bmi)
 
-            if not existing_assessment:
-                bmi = row.get("bmi")
-                bmi_clean = None if pd.isna(bmi) else float(bmi)
+            assessment_doc = {
+                "patient_id": patient_id,
+                "source_row_id": csv_source_id,
 
-                assessment_doc = {
-                    "patient_id": patient_id,
-                    "source_row_id": csv_source_id,
+                "work_type": row.get("work_type"),
+                "ever_married": row.get("ever_married"),
+                "residence_type": row.get("Residence_type"),
+                "avg_glucose_level": float(row["avg_glucose_level"]),
+                "hypertensiv_status": int(row["hypertension"]),
+                "bmi": bmi_clean,
+                "smoking_status": row.get("smoking_status"),
+                "stroke_status": row.get("stroke"),
+            }
 
-                    "work_type": row.get("work_type"),
-                    "ever_married": row.get("ever_married"),
-                    "residence_type": row.get("Residence_type"),
-                    "avg_glucose_level": float(row["avg_glucose_level"]),
-                    "hypertensiv_status": int(row["hypertension"]),
-                    "bmi": bmi_clean,
-                    "smoking_status": row.get("smoking_status"),
-                    "heart_disease": int(row["heart_disease"]),
-                    "stroke_status": row.get("stroke"),
-                }
+            patient_assessments_collection.insert_one(assessment_doc)
+            mongo_inserted += 1
 
-                patient_assessments_collection.insert_one(assessment_doc)
-                mongo_inserted += 1
 
-        print(f"SQLite: {sqlite_inserted} patients inserted, {skipped} duplicates skipped.")
-        print(f" MongoDB: {mongo_inserted} assessments inserted.")
+    print(f"SQLite: {sqlite_inserted} patients inserted, {skipped} duplicates skipped.")
+    print(f"MongoDB: {mongo_inserted} assessments inserted.")
 
-    else:
-        print(f"{PATIENT_CSV} not found skipping health seeding.")
+
 
     conn.commit()
     conn.close()
@@ -215,7 +214,7 @@ def init_database():
     with open(seed_flag_file, 'w') as f:
         f.write(datetime.now().isoformat())
 
-    print("\n✓ Database initialized & seeded successfully!")
+    print("\n Database initialized & seeded successfully!")
     print("(Future runs will skip seeding. Delete instance/.db_seeded to re-seed)")
 
 

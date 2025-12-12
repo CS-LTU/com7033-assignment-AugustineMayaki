@@ -249,7 +249,7 @@ def validate_patient_assessment_data( work_type,
     avg_glucose_level,
     hypertensiv_status,
     bmi,
-    smoking_status,):
+    smoking_status, stroke_status):
 
     """
     Validate patient assessment form data.
@@ -257,7 +257,7 @@ def validate_patient_assessment_data( work_type,
     """
 
     if not all([work_type, ever_married, residence_type,
-                hypertensiv_status, smoking_status]):
+                hypertensiv_status, smoking_status, stroke_status]):
         raise ValueError("Please fill out all required fields.")
 
     # allowed values for category fields
@@ -277,6 +277,10 @@ def validate_patient_assessment_data( work_type,
     allowed_hypertension = {"0", "1"}
     if hypertensiv_status not in allowed_hypertension:
         raise ValueError("Invalid hypertension status selected.")
+    
+    allowed_stroke_status = {"0", "1"}
+    if stroke_status not in allowed_stroke_status:
+        raise ValueError("Invalid stroke status selected.")
 
     allowed_smoking = {"formerly smoked", "never smoked",
                        "smokes", "unknown"}
@@ -303,6 +307,7 @@ def validate_patient_assessment_data( work_type,
         "hypertensiv_status": hypertensiv_status,
         "bmi": bmi,
         "smoking_status": smoking_status,
+        "stroke_status": stroke_status,
     }
 
 def get_patient_assessments_history(assessment, patient_id):

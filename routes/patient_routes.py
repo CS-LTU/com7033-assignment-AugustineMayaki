@@ -121,9 +121,10 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, emerg
         ever_married = request.form.get('ever_married', '').strip()
         residence_type = request.form.get('residence_type', '').strip()
         avg_glucose_level = request.form.get('avg_glucose_level', '').strip()
-        hypertensiv_status = request.form.get('hypertensiv_status', '').strip()
+        hypertensiv_status = str(request.form.get('hypertensiv_status', '').strip())
         bmi = request.form.get('bmi', '').strip()
         smoking_status = request.form.get('smoking_status', '').strip()
+        stroke_status = str(request.form.get('stroke_status', '').strip())
         
         try:
             result = validate_patient_assessment_data(
@@ -133,7 +134,8 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, emerg
                 avg_glucose_level=float(avg_glucose_level) if avg_glucose_level else 0,
                 hypertensiv_status=hypertensiv_status,
                 bmi=float(bmi) if bmi else 0,
-                smoking_status=smoking_status
+                smoking_status=smoking_status,
+                stroke_status=stroke_status
             )
             
             """
@@ -169,7 +171,8 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, emerg
                                      'avg_glucose_level': avg_glucose_level,
                                      'hypertensiv_status': hypertensiv_status,
                                      'bmi': bmi,
-                                     'smoking_status': smoking_status
+                                     'smoking_status': smoking_status,
+                                     'stroke': stroke_status
                                  })
         except Exception as e:
             flash(f'Failed to save assessment: {str(e)}', 'error')
@@ -184,7 +187,8 @@ def init_patient_routes(app, db=None, patient_assessments_collection=None, emerg
                                      'avg_glucose_level': avg_glucose_level,
                                      'hypertensiv_status': hypertensiv_status,
                                      'bmi': bmi,
-                                     'smoking_status': smoking_status
+                                     'smoking_status': smoking_status,
+                                       'stroke': stroke_status
                                  })
     
 

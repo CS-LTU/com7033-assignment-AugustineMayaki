@@ -6,6 +6,7 @@
 {% from "components/modal.html" import render as Modal %}
 {% block main_content %}
     {% set hypertensiv_options = [{"label": "Yes", "value": 1}, {"label": "No", "value": 0}] %}
+    {% set stroke_status_options = [{"label": "Had a stroke", "value": 1}, {"label": "No stroke", "value": 0}] %}
     {% set residenceType_options = [{"label": "Urban", "value": "urban"}, {"label": "Rural", "value": "rural"}] %}
     {% set gender_options = [
         {
@@ -242,6 +243,14 @@
                                                         required=True) }}
                             {{ Input(name='avg_glucose_level', label='Average Glucose Level', placeholder='Enter average glucose level', input_class='full_rounded_input', value=form_data.avg_glucose_level if form_data else '', required=True) }}
                             {{ Input(name='bmi', label='BMI', placeholder='Enter  BMI', input_class='full_rounded_input', value=form_data.bmi if form_data else '', required=True) }}
+                            {{ Dropdown(id='stroke_status',
+                                                        name='stroke_status',
+                                                        label='Stroke Status',
+                                                        options=stroke_status_options,
+                                                        placeholder='Select',
+                                                        class_name='w-full',
+                                                        value=form_data.stroke_status if form_data else '',
+                                                        required=True) }}
                         </div>
                     </div>
                     <div class="flex gap-4  justify-end ">
@@ -280,7 +289,7 @@
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ a.ever_married | capitalize }}</td>
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ a.residence_type | capitalize }}</td>
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">
-                                        {% if a.hypertensiv_status == 1 %}
+                                        {% if a.hypertensiv_status == 1 or a.hypertensiv_status == '1' %}
                                             Yes
                                         {% else %}
                                             No
@@ -290,7 +299,13 @@
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ a.bmi }}</td>
                                     <td class="px-4 sm:px-6 py-3 text-sm text-slate-700">{{ a.smoking_status | capitalize }}</td>
                                     <td class="px-4 sm:px-6 py-3 text-sm text-right">
-                                        <span class="inline-flex items-center gap-1 text-gray-600">N/A</span>
+                                        <span class="inline-flex items-center gap-1 text-gray-600">
+                                            {% if a.stroke_status == 1 or a.stroke_status == '1' %}
+                                                Had a stroke
+                                            {% else %}
+                                                No stroke
+                                            {% endif %}
+                                        </span>
                                     </td>
                                 </tr>
                             {% endfor %}

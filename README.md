@@ -47,7 +47,7 @@ cd com7033-assignment-AugustineMayaki
 macOS / Linux:
 ```bash
 python -m venv venv
-source venv/Scripts/activate
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 Windows (PowerShell):

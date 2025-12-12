@@ -17,7 +17,7 @@ package-lock.json
 
 
 # Database
-
+instance/
 neuroPredict.db
 *.sqlite3
 *.db
